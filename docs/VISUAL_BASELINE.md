@@ -57,7 +57,7 @@ ASMRTube固有のIdentityは次で作ります。
 | Theme / brightness / display behavior | `appearance.js` |
 | Timestamp interaction hierarchy | `timestamp-ui.js` / `timestamp-ui.css` |
 | Legacy compatibility | `styles.css` / `asmr-overrides.css` / `ui-base-v2.css` / `product-v2.css` |
-| Feature-specific compatibility | `quality-v21.css` / `library-tools-v22.css` |
+| Feature-specific compatibility | `quality.css` / `library-tools.css` |
 
 v3 Visual Source of TruthはLegacy CSSより後に読み込みます。
 
@@ -141,13 +141,14 @@ Visual fileが存在するだけで完成扱いしません。
 
 ```text
 app-config.js
-app.js
+diagnostics.js
+core-utils.js
 timestamp-parser.js
+app.js
+youtube-runtime.js
 timestamp-ui.js
 ui-enhancements.js
-app-quality-v21.js
-timestamp-polish-v21.js
-library-tools-v22.js
+library-tools.js
 appearance.js
 ```
 
