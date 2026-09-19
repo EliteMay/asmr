@@ -31,16 +31,20 @@
 
       <div class="search-box"><span>⌕</span><input id="searchInput" type="search" placeholder="タイトル・チャンネル・音を検索"></div>
 
+      <div class="sidebar-section-label">ライブラリ</div>
       <nav class="view-nav" id="nav" aria-label="ライブラリ表示">
-        <button class="view-btn active" data-view="all"><span>すべて</span><span class="nav-count" id="countAll">0</span></button>
-        <button class="view-btn" data-view="favorites"><span>お気に入り</span><span class="nav-count" id="countFav">0</span></button>
-        <button class="view-btn" data-view="recent"><span>最近聴いた</span><span class="nav-count" id="countRecent">0</span></button>
-        <button class="view-btn" data-view="resume"><span>続きから</span><span class="nav-count" id="countResume">0</span></button>
-        <button class="view-btn" data-view="sleep"><span>睡眠向け</span><span class="nav-count" id="countSleep">0</span></button>
+        <button class="view-btn active" data-view="all"><span><span class="nav-icon">♫</span>すべてのASMR</span><span class="nav-count" id="countAll">0</span></button>
+        <button class="view-btn" data-view="favorites"><span><span class="nav-icon">★</span>お気に入り</span><span class="nav-count" id="countFav">0</span></button>
+        <button class="view-btn" data-view="recent"><span><span class="nav-icon">↻</span>最近聴いた</span><span class="nav-count" id="countRecent">0</span></button>
+        <button class="view-btn" data-view="resume"><span><span class="nav-icon">▶</span>続きから</span><span class="nav-count" id="countResume">0</span></button>
+        <button class="view-btn" data-view="sleep"><span><span class="nav-icon">☾</span>睡眠向け</span><span class="nav-count" id="countSleep">0</span></button>
       </nav>
 
       <div class="channel-head"><span>チャンネル</span><span class="nav-count" id="channelCount">0</span></div>
       <div id="channelList" class="channel-nav" aria-label="チャンネル別ライブラリ"></div>
+
+      <div class="tag-sidebar-head"><span>タグ</span><span class="nav-count" id="tagSidebarCount">0</span></div>
+      <div id="tagSidebarList" class="tag-sidebar-nav" aria-label="タグ別ライブラリ"></div>
 
       <div class="playlist-head"><span>プレイリスト</span><button class="mini-icon" id="newPlaylistBtn" title="プレイリスト作成">＋</button></div>
       <div id="playlistList" class="playlist-nav"></div>
