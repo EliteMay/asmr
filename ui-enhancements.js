@@ -116,7 +116,7 @@
     return `<button type="button" class="library-browser-card ${state.selectedId===item.id?'active':''}" data-browser-item="${safe(item.id)}"><span class="library-browser-thumb">${image}</span><span class="library-browser-copy"><strong>${safe(item.title||'無題')}</strong><span>${safe(item.creator||'チャンネル未設定')}</span>${tags?`<small>${tags}</small>`:''}</span></button>`;
   }
   function bindBrowserCards(root=document){
-    $('[data-browser-item]',root).forEach(button=>button.onclick=()=>{
+    $$('[data-browser-item]',root).forEach(button=>button.onclick=()=>{
       selectItem(button.dataset.browserItem);
       refreshMainPage();
     });
@@ -158,9 +158,9 @@
     workspace.insertAdjacentElement('beforebegin',host);
 
     $('#browseSearch')?.addEventListener('input',event=>{browseQuery=event.target.value;renderBrowsePage()});
-    $('[data-browse-mode]',host).forEach(button=>button.addEventListener('click',()=>{
+    $$('[data-browse-mode]',host).forEach(button=>button.addEventListener('click',()=>{
       browseMode=button.dataset.browseMode;
-      $('[data-browse-mode]',host).forEach(node=>node.classList.toggle('active',node===button));
+      $$('[data-browse-mode]',host).forEach(node=>node.classList.toggle('active',node===button));
       renderBrowsePage();
     }));
     $('#browseAddBtn')?.addEventListener('click',()=>$('#topAddBtn')?.click());
@@ -184,7 +184,7 @@
     $('#channelPageTitle').textContent=selected?.name||'チャンネルを選択';
     $('#channelPageCount').textContent=`${items.length}件`;
     grid.innerHTML=items.length?items.map(pageCardHtml).join(''):'<div class="library-page-empty">このチャンネルにはASMRがありません。</div>';
-    $('[data-channel-page-key]',nav).forEach(button=>button.onclick=()=>{channelPageKey=button.dataset.channelPageKey;renderChannelsPage()});
+    $$('[data-channel-page-key]',nav).forEach(button=>button.onclick=()=>{channelPageKey=button.dataset.channelPageKey;renderChannelsPage()});
     bindBrowserCards(grid);
   }
   function renderTagsPage(){
@@ -197,7 +197,7 @@
     $('#tagPageTitle').textContent=selected?.name||'タグを選択';
     $('#tagPageCount').textContent=`${items.length}件`;
     grid.innerHTML=items.length?items.map(pageCardHtml).join(''):'<div class="library-page-empty">このタグのASMRはありません。</div>';
-    $('[data-tag-page-key]',nav).forEach(button=>button.onclick=()=>{tagPageKey=button.dataset.tagPageKey;renderTagsPage()});
+    $$('[data-tag-page-key]',nav).forEach(button=>button.onclick=()=>{tagPageKey=button.dataset.tagPageKey;renderTagsPage()});
     bindBrowserCards(grid);
   }
   function refreshMainPage(){
@@ -210,7 +210,7 @@
     if(document.body.classList.contains('dashboard-mode'))hideDashboard();
     if(document.body.classList.contains('settings-mode'))window.asmrtubeAppearance?.hideSettings?.();
     mainPage=page;document.body.dataset.mainPage=page;
-    $('.page-switch-btn').forEach(button=>button.classList.toggle('active',button.dataset.mainPage===page));
+    $$('.page-switch-btn').forEach(button=>button.classList.toggle('active',button.dataset.mainPage===page));
     refreshMainPage();
     if(page==='player')renderSelection();
     if(closeSidebar)closeMobileSidebar();
@@ -219,7 +219,7 @@
   function setupMainPageTabs(){
     createMainPages();
     document.body.dataset.mainPage='player';
-    $('.page-switch-btn').forEach(button=>button.addEventListener('click',()=>setMainPage(button.dataset.mainPage)));
+    $$('.page-switch-btn').forEach(button=>button.addEventListener('click',()=>setMainPage(button.dataset.mainPage)));
   }
 
   function createDashboard(){
