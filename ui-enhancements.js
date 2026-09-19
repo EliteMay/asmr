@@ -193,7 +193,7 @@
     if(!groups.some(group=>group.key===tagPageKey))tagPageKey=groups[0]?.key||'';
     nav.innerHTML=groups.length?groups.map(group=>`<button type="button" class="library-entity-card tag-entity-card ${group.key===tagPageKey?'active':''}" data-tag-page-key="${safe(group.key)}"><span class="library-entity-mark">#</span><span><strong>${safe(group.name)}</strong><small>${group.count}件</small></span></button>`).join(''):'<div class="library-page-empty">タグがまだありません。</div>';
     const selected=groups.find(group=>group.key===tagPageKey);
-    const items=selected?(state.library||[]).filter(item=>(item.tags||[]).some(tag=>String(tag).normalize('NFKC').toLowerCase()===selected.key)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)):[];
+    const items=selected?(state.library||[]).filter(item=>(item.tags||[]).some(tag=>(typeof normalizeSearch==='function'?normalizeSearch(tag):String(tag).normalize('NFKC').toLowerCase().trim())===selected.key)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)):[];
     $('#tagPageTitle').textContent=selected?.name||'タグを選択';
     $('#tagPageCount').textContent=`${items.length}件`;
     grid.innerHTML=items.length?items.map(pageCardHtml).join(''):'<div class="library-page-empty">このタグのASMRはありません。</div>';
@@ -220,7 +220,6 @@
     createMainPages();
     document.body.dataset.mainPage='player';
     $('.page-switch-btn').forEach(button=>button.addEventListener('click',()=>setMainPage(button.dataset.mainPage)));
-    renderBrowsePage();renderChannelsPage();renderTagsPage();
   }
 
   function createDashboard(){
