@@ -80,7 +80,7 @@
   function createSectionDialog(){
     if($('#favoriteSectionDialog'))return;
     const dialog=document.createElement('dialog');dialog.id='favoriteSectionDialog';dialog.className='dialog v22-dialog';
-    dialog.innerHTML=`<form method="dialog" id="favoriteSectionForm"><div class="dialog-head"><div><div class="eyebrow">FAVORITE SECTION</div><h3>お気に入り区間を保存</h3></div><button value="cancel" class="icon-btn subtle">×</button></div><div class="v22-section-form"><label>名前<input id="favoriteSectionLabel" maxlength="80" placeholder="例: 一番好きな耳ふー"></label><div class="two-col"><label>開始<input id="favoriteSectionStart" placeholder="12:34"></label><label>終了<input id="favoriteSectionEnd" placeholder="14:20"></label></div><div class="v22-dialog-hint">A-B区間が設定されていればその範囲を使います。未設定なら現在位置から30秒を仮入力します。</div></div><div class="dialog-actions"><button value="cancel" class="ghost-btn">キャンセル</button><button type="submit" class="primary-btn">保存</button></div></form>`;
+    dialog.innerHTML=`<form method="dialog" id="favoriteSectionForm"><div class="dialog-head"><div><div class="eyebrow">FAVORITE SECTION</div><h3>お気に入り区間を保存</h3></div><button type="button" data-dialog-close class="icon-btn subtle">×</button></div><div class="v22-section-form"><label>名前<input id="favoriteSectionLabel" maxlength="80" placeholder="例: 一番好きな耳ふー"></label><div class="two-col"><label>開始<input id="favoriteSectionStart" placeholder="12:34"></label><label>終了<input id="favoriteSectionEnd" placeholder="14:20"></label></div><div class="v22-dialog-hint">A-B区間が設定されていればその範囲を使います。未設定なら現在位置から30秒を仮入力します。</div></div><div class="dialog-actions"><button type="button" data-dialog-close class="ghost-btn">キャンセル</button><button type="submit" class="primary-btn">保存</button></div></form>`;
     document.body.appendChild(dialog);
     $('#favoriteSectionForm').addEventListener('submit',event=>{
       event.preventDefault();const item=getItem();if(!item)return;
@@ -108,7 +108,7 @@
   function createCreatorDialog(){
     if($('#creatorDialog'))return;
     const dialog=document.createElement('dialog');dialog.id='creatorDialog';dialog.className='dialog v22-dialog v22-creator-dialog';
-    dialog.innerHTML=`<form method="dialog"><div class="dialog-head"><div><div class="eyebrow">CREATOR LIBRARY</div><h3 id="creatorDialogTitle">配信者</h3><p class="muted small" id="creatorDialogMeta"></p></div><button value="cancel" class="icon-btn subtle">×</button></div><div id="creatorDialogBody"></div><div class="dialog-actions"><button value="cancel" class="primary-btn">閉じる</button></div></form>`;
+    dialog.innerHTML=`<form method="dialog"><div class="dialog-head"><div><div class="eyebrow">CREATOR LIBRARY</div><h3 id="creatorDialogTitle">配信者</h3><p class="muted small" id="creatorDialogMeta"></p></div><button type="button" data-dialog-close class="icon-btn subtle">×</button></div><div id="creatorDialogBody"></div><div class="dialog-actions"><button type="button" data-dialog-close class="primary-btn">閉じる</button></div></form>`;
     document.body.appendChild(dialog);
   }
   function showCreatorPage(creator){
@@ -161,7 +161,7 @@
   function createTimestampEditor(){
     if($('#timestampEditDialog'))return;
     const dialog=document.createElement('dialog');dialog.id='timestampEditDialog';dialog.className='dialog timestamp-edit-dialog';
-    dialog.innerHTML=`<form method="dialog" id="timestampEditForm"><div class="dialog-head"><div><div class="eyebrow">TIMESTAMP EDITOR</div><h3>保存済みタイムスタンプを編集</h3><p class="muted small">時間・見出し・内容・副題を直接修正できます。親子情報は可能な範囲で維持します。</p></div><button value="cancel" class="icon-btn subtle">×</button></div><div class="timestamp-edit-toolbar"><button type="button" class="ghost-btn" id="timestampAddCurrent">＋ 現在位置</button><button type="button" class="ghost-btn" id="timestampAddBlank">＋ 空の行</button><span id="timestampEditCount"></span></div><div class="timestamp-edit-head"><span>見出し</span><span>時間</span><span>内容</span><span>副題</span><span></span></div><div id="timestampEditRows" class="timestamp-edit-rows"></div><div class="dialog-actions"><button value="cancel" class="ghost-btn">キャンセル</button><button type="submit" class="primary-btn">変更を保存</button></div></form>`;
+    dialog.innerHTML=`<form method="dialog" id="timestampEditForm"><div class="dialog-head"><div><div class="eyebrow">TIMESTAMP EDITOR</div><h3>保存済みタイムスタンプを編集</h3><p class="muted small">時間・見出し・内容・副題を直接修正できます。親子情報は可能な範囲で維持します。</p></div><button type="button" data-dialog-close class="icon-btn subtle">×</button></div><div class="timestamp-edit-toolbar"><button type="button" class="ghost-btn" id="timestampAddCurrent">＋ 現在位置</button><button type="button" class="ghost-btn" id="timestampAddBlank">＋ 空の行</button><span id="timestampEditCount"></span></div><div class="timestamp-edit-head"><span>見出し</span><span>時間</span><span>内容</span><span>副題</span><span></span></div><div id="timestampEditRows" class="timestamp-edit-rows"></div><div class="dialog-actions"><button type="button" data-dialog-close class="ghost-btn">キャンセル</button><button type="submit" class="primary-btn">変更を保存</button></div></form>`;
     document.body.appendChild(dialog);
     $('#timestampAddCurrent').onclick=()=>{captureEditorInputs();addEditorRow(Math.floor(currentPosition()))};
     $('#timestampAddBlank').onclick=()=>{captureEditorInputs();addEditorRow(0)};
