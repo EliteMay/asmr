@@ -108,11 +108,11 @@
   function createCreatorDialog(){
     if($('#creatorDialog'))return;
     const dialog=document.createElement('dialog');dialog.id='creatorDialog';dialog.className='dialog v22-dialog v22-creator-dialog';
-    dialog.innerHTML=`<form method="dialog"><div class="dialog-head"><div><div class="eyebrow">CREATOR LIBRARY</div><h3 id="creatorDialogTitle">配信者</h3><p class="muted small" id="creatorDialogMeta"></p></div><button type="button" data-dialog-close class="icon-btn subtle">×</button></div><div id="creatorDialogBody"></div><div class="dialog-actions"><button type="button" data-dialog-close class="primary-btn">閉じる</button></div></form>`;
+    dialog.innerHTML=`<form method="dialog"><div class="dialog-head"><div><div class="eyebrow">CREATOR LIBRARY</div><h3 id="creatorDialogTitle">チャンネル</h3><p class="muted small" id="creatorDialogMeta"></p></div><button type="button" data-dialog-close class="icon-btn subtle">×</button></div><div id="creatorDialogBody"></div><div class="dialog-actions"><button type="button" data-dialog-close class="primary-btn">閉じる</button></div></form>`;
     document.body.appendChild(dialog);
   }
   function showCreatorPage(creator){
-    const name=String(creator||'').trim();if(!name)return toast('配信者が設定されていません');
+    const name=String(creator||'').trim();if(!name)return toast('チャンネルが設定されていません');
     createCreatorDialog();
     const key=normalize(name),items=state.library.filter(x=>normalize(x.creator)===key).sort((a,b)=>(b.rating||0)-(a.rating||0)||(b.createdAt||0)-(a.createdAt||0));
     const fav=items.filter(x=>x.favorite).length,sleep=items.filter(x=>x.sleepFriendly||x.tags?.includes('睡眠')).length,timestamps=items.reduce((n,x)=>n+(x.timestamps?.length||0),0);
@@ -136,7 +136,7 @@
     if(old&&!force&&old.dataset.signature===sig)return;if(old)old.remove();
     const sections=sectionsOf(item),resume=Number(item.resumeAt||0),resumeDuration=Number(item.resumeDuration||0);
     const wrapper=document.createElement('div');wrapper.className='v22-library-tools';wrapper.dataset.signature=sig;
-    wrapper.innerHTML=`${resume>8?`<div class="resume-card"><div><span>前回の続き</span><strong>${fmtTime(resume)}${resumeDuration?` / ${fmtTime(resumeDuration)}`:''}</strong></div><button type="button" class="primary-soft" id="resumePlayBtn">▶ 続きから</button></div>`:''}<div class="v22-tool-row"><button type="button" class="ghost-btn" id="creatorPageBtn">配信者ページ</button><button type="button" class="ghost-btn" id="saveFavoriteSectionBtn">＋ お気に入り区間</button></div><div class="favorite-sections"><div class="favorite-sections-head"><strong>お気に入り区間</strong><span>${sections.length}件</span></div>${sections.length?`<div class="favorite-section-list">${sections.map(section=>`<div class="favorite-section-item"><button type="button" class="favorite-section-play" data-section-play="${safe(section.id)}"><span>${safe(section.label)}</span><small>${fmtTime(section.start)} 〜 ${fmtTime(section.end)}</small></button><button type="button" class="favorite-section-delete" data-section-delete="${safe(section.id)}" title="削除">×</button></div>`).join('')}</div>`:'<div class="favorite-section-empty">A-B区間や好きな場面を名前付きで保存できます。</div>'}</div>`;
+    wrapper.innerHTML=`${resume>8?`<div class="resume-card"><div><span>前回の続き</span><strong>${fmtTime(resume)}${resumeDuration?` / ${fmtTime(resumeDuration)}`:''}</strong></div><button type="button" class="primary-soft" id="resumePlayBtn">▶ 続きから</button></div>`:''}<div class="v22-tool-row"><button type="button" class="ghost-btn" id="creatorPageBtn">チャンネルページ</button><button type="button" class="ghost-btn" id="saveFavoriteSectionBtn">＋ お気に入り区間</button></div><div class="favorite-sections"><div class="favorite-sections-head"><strong>お気に入り区間</strong><span>${sections.length}件</span></div>${sections.length?`<div class="favorite-section-list">${sections.map(section=>`<div class="favorite-section-item"><button type="button" class="favorite-section-play" data-section-play="${safe(section.id)}"><span>${safe(section.label)}</span><small>${fmtTime(section.start)} 〜 ${fmtTime(section.end)}</small></button><button type="button" class="favorite-section-delete" data-section-delete="${safe(section.id)}" title="削除">×</button></div>`).join('')}</div>`:'<div class="favorite-section-empty">A-B区間や好きな場面を名前付きで保存できます。</div>'}</div>`;
     info.querySelector('.info-actions').insertAdjacentElement('beforebegin',wrapper);
     $('#resumePlayBtn',wrapper)?.addEventListener('click',()=>playItem(item.id,resume));
     $('#creatorPageBtn',wrapper)?.addEventListener('click',()=>showCreatorPage(item.creator));
