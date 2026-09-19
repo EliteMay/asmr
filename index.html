@@ -32,6 +32,13 @@
       <div class="sidebar-scroll" aria-label="ライブラリと分類">
       <div class="search-box"><span>⌕</span><input id="searchInput" type="search" placeholder="タイトル・チャンネル・音を検索"></div>
 
+      <nav class="page-switch" aria-label="メイン画面">
+        <button id="playerPageBtn" class="page-switch-btn active" type="button" data-main-page="player"><span>▶</span><span>再生画面</span></button>
+        <button id="browsePageBtn" class="page-switch-btn" type="button" data-main-page="browse"><span>▦</span><span>ASMRを探す</span></button>
+        <button id="channelsPageBtn" class="page-switch-btn" type="button" data-main-page="channels"><span>◉</span><span>チャンネル</span></button>
+        <button id="tagsPageBtn" class="page-switch-btn" type="button" data-main-page="tags"><span>#</span><span>タグ</span></button>
+      </nav>
+
       <div class="sidebar-section-label">ライブラリ</div>
       <nav class="view-nav" id="nav" aria-label="ライブラリ表示">
         <button class="view-btn active" data-view="all"><span><span class="nav-icon">♫</span>すべてのASMR</span><span class="nav-count" id="countAll">0</span></button>

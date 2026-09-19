@@ -72,6 +72,8 @@ v3 Visual Source of TruthはLegacy CSSより後に読み込みます。
 ### 2. Library remains practical
 
 - Search / View / Channel / Tag / Playlist / Libraryの区別が一目で分かること。
+- Search直下のPrimary Page switchは `再生画面 / ASMRを探す / チャンネル / タグ` の4項目を持ち、現在PageをAccent underlineで識別できること。
+- `ASMRを探す` はサムネイル中心、`チャンネル` と `タグ` は分類一覧 + 該当ASMRという役割を持つこと。
 - チャンネルとタグは件数付きの選択可能な分類として左Railから直接絞り込めること。
 - 分類が増えてもASMR一覧が押し潰されないよう、Brand / Toolsを固定し、中央のLibrary navigationを単一スクロール領域として扱うこと。
 - サムネイルが視覚的な探索を助けること。

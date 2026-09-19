@@ -38,7 +38,7 @@ const retired=['app-quality-v21.js','timestamp-polish-v21.js','library-tools-v22
 for(const file of retired)if(exists(file))fail(`retired patch runtime must be removed: ${file}`);
 
 const meta=JSON.parse(read('project-meta.json'));
-const config=read('app-config.js'),app=read('app.js'),runtime=read('youtube-runtime.js'),appearance=read('appearance.js'),shell=read('ui-enhancements.js'),libraryTools=read('library-tools.js'),core=read('core-utils.js'),diagnostics=read('diagnostics.js'),timestampUi=read('timestamp-ui.js');
+const config=read('app-config.js'),app=read('app.js'),runtime=read('youtube-runtime.js'),appearance=read('appearance.js'),shell=read('ui-enhancements.js'),libraryTools=read('library-tools.js'),core=read('core-utils.js'),diagnostics=read('diagnostics.js'),timestampUi=read('timestamp-ui.js'),workspace=read('workspace.css');
 const configString=key=>config.match(new RegExp(`${key}:\\s*['\"]([^'\"]+)['\"]`))?.[1]||null;
 const configNumber=key=>{const value=config.match(new RegExp(`${key}:\\s*(\\d+)`))?.[1];return value==null?null:Number(value)};
 if(configString('appVersion')!==meta.appVersion)fail(`appVersion mismatch: config=${configString('appVersion')} meta=${meta.appVersion}`);
@@ -87,7 +87,10 @@ if(!html.includes('data-view="resume"')||!html.includes('id="countResume"')||!ap
 if(!html.includes('id="channelList"')||!html.includes('id="channelCount"')||!app.includes('function renderChannels()')||!app.includes("state.currentView==='channel'"))fail('channel grouping/navigation is missing');
 if(!html.includes('id="tagSidebarList"')||!html.includes('id="tagSidebarCount"')||!app.includes('function renderSidebarTags()')||!app.includes("state.currentView==='tag'"))fail('tag sidebar grouping/navigation is missing');
 if(!html.includes('class="sidebar-section-label"')||!html.includes('class="nav-icon"')||!html.includes('class="sidebar-scroll"'))fail('LyricTube-style grouped library navigation structure is missing');
-if(!shell.includes('.channel-item')||!appearance.includes('.channel-item')||!shell.includes('.tag-sidebar-item')||!appearance.includes('.tag-sidebar-item'))fail('channel/tag navigation must participate in dashboard/mobile/settings exits');
+for(const id of ['playerPageBtn','browsePageBtn','channelsPageBtn','tagsPageBtn'])if(!html.includes(`id="${id}"`))fail(`primary page tab is missing: ${id}`);
+if(!shell.includes('function setMainPage(')||!shell.includes('function renderBrowsePage(')||!shell.includes('function renderChannelsPage(')||!shell.includes('function renderTagsPage('))fail('primary page runtime is incomplete');
+if(!workspace.includes('.page-switch')||!workspace.includes('body[data-main-page="browse"] #browsePage')||!workspace.includes('body[data-main-page="channels"] #channelsPage')||!workspace.includes('body[data-main-page="tags"] #tagsPage'))fail('primary page visual states are missing');
+if(!shell.includes('.channel-item')||!appearance.includes('.channel-item')||!shell.includes('.tag-sidebar-item')||!appearance.includes('.tag-sidebar-item')||!appearance.includes('.page-switch-btn'))fail('channel/tag/page navigation must participate in dashboard/mobile/settings exits');
 if(!libraryTools.includes("document.documentElement.dataset.thumbs!=='0'")||!libraryTools.includes('showThumbs?`<img src='))fail('creator library must honor thumbnail suppression without creating image requests');
 if(!shell.includes('PRE_RESTORE_KEY')||!shell.includes('snapshotUndoRestoreBtn'))fail('pre-restore recovery UI is missing');
 if(!shell.includes('renderSelection()'))fail('dashboard exit must restore canonical topbar selection');

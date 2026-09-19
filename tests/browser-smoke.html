@@ -38,6 +38,27 @@
     d.querySelector('.view-btn[data-view="all"]').click();
     d.querySelectorAll('.song-item')[0]?.click();
 
+    assert(d.querySelectorAll('.page-switch-btn').length===4,'primary page tabs did not render');
+    assert(d.body.dataset.mainPage==='player','player page was not the default primary page');
+    d.querySelector('#browsePageBtn').click();
+    assert(d.body.dataset.mainPage==='browse','ASMR browse page did not open');
+    assert(d.querySelectorAll('#browseGrid .library-browser-card').length===2,'ASMR browse page did not render the library');
+    d.querySelector('#channelsPageBtn').click();
+    assert(d.body.dataset.mainPage==='channels','channel page did not open');
+    assert(d.querySelectorAll('#channelPageNav .library-entity-card').length===2,'channel page did not render channel choices');
+    const channelPageChoice=[...d.querySelectorAll('#channelPageNav .library-entity-card')].find(button=>button.textContent.includes('Other Channel'));
+    assert(channelPageChoice,'channel page choice is missing');
+    channelPageChoice.click();
+    assert(d.querySelectorAll('#channelPageGrid .library-browser-card').length===1,'channel page did not filter channel ASMR');
+    d.querySelector('#tagsPageBtn').click();
+    assert(d.body.dataset.mainPage==='tags','tag page did not open');
+    const tagPageChoice=[...d.querySelectorAll('#tagPageNav .library-entity-card')].find(button=>button.textContent.includes('囁き'));
+    assert(tagPageChoice,'tag page choice is missing');
+    tagPageChoice.click();
+    assert(d.querySelectorAll('#tagPageGrid .library-browser-card').length===1,'tag page did not filter tagged ASMR');
+    d.querySelector('#playerPageBtn').click();
+    assert(d.body.dataset.mainPage==='player','player page did not reopen');
+
     d.querySelector('#newPlaylistBtn').click();
     assert(d.querySelector('#playlistDialog')?.open,'playlist dialog did not open');
     assert(d.querySelector('#playlistName')?.value==='','playlist name was not reset');
