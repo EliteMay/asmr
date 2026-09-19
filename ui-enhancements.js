@@ -109,7 +109,7 @@
     if($('#dashboardPage'))return;
     const nav=$('#nav');if(nav&&!$('#dashboardBtn')){const button=document.createElement('button');button.className='view-btn';button.id='dashboardBtn';button.innerHTML='<span>概要</span><span class="nav-count">⌂</span>';nav.prepend(button);button.onclick=showDashboard}
     const workspace=$('.workspace');if(workspace){const page=document.createElement('section');page.id='dashboardPage';page.className='dashboard-page';workspace.insertAdjacentElement('beforebegin',page)}
-    $$('.view-btn[data-view]').forEach(button=>button.addEventListener('click',hideDashboard));$('.sidebar')?.addEventListener('click',event=>{if(event.target.closest('.song-item,.playlist-item,.channel-item'))hideDashboard()});
+    $$('.view-btn[data-view]').forEach(button=>button.addEventListener('click',hideDashboard));$('.sidebar')?.addEventListener('click',event=>{if(event.target.closest('.song-item,.playlist-item,.channel-item,.tag-sidebar-item'))hideDashboard()});
   }
   function renderDashboard(){
     const page=$('#dashboardPage');if(!page)return;
@@ -132,7 +132,7 @@
     const close=document.createElement('button');close.className='mobile-sidebar-close';close.type='button';close.textContent='×';close.setAttribute('aria-label','メニューを閉じる');brandRow?.appendChild(close);
     const backdrop=document.createElement('button');backdrop.className='mobile-sidebar-backdrop';backdrop.type='button';backdrop.setAttribute('aria-label','メニューを閉じる');document.body.appendChild(backdrop);
     menu.onclick=()=>{const open=document.body.classList.toggle('mobile-sidebar-open');menu.setAttribute('aria-expanded',String(open))};close.onclick=closeMobileSidebar;backdrop.onclick=closeMobileSidebar;
-    sidebar.addEventListener('click',event=>{if(matchMedia('(max-width:900px)').matches&&event.target.closest('.song-item,.view-btn,.playlist-item,.channel-item'))setTimeout(closeMobileSidebar,30)});
+    sidebar.addEventListener('click',event=>{if(matchMedia('(max-width:900px)').matches&&event.target.closest('.song-item,.view-btn,.playlist-item,.channel-item,.tag-sidebar-item'))setTimeout(closeMobileSidebar,30)});
   }
   function closeMobileSidebar(){document.body.classList.remove('mobile-sidebar-open');$('#mobileMenuBtn')?.setAttribute('aria-expanded','false')}
 
