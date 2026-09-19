@@ -1,7 +1,7 @@
 const STORAGE_KEY='asmrtube.library.v1';
 const DEFAULT_TAGS=['耳かき','梵天','囁き','吐息','オノマトペ','タッピング','マッサージ','添い寝','ロールプレイ','睡眠'];
 const EAR_TAGS=['右耳','左耳','両耳','交互'];
-const state={library:[],playlists:[],recent:[],selectedId:null,currentView:'all',currentPlaylist:null,query:'',filters:new Set(),player:null,currentId:null,duration:0,loopA:null,loopB:null,sleepTimer:null,parsedTimestamps:[]};
+const state={library:[],playlists:[],recent:[],selectedId:null,currentView:'all',currentPlaylist:null,currentChannel:null,query:'',filters:new Set(),player:null,currentId:null,duration:0,loopA:null,loopB:null,sleepTimer:null,parsedTimestamps:[]};
 const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
 let metadataSeq=0;
 let metadataTimer=null;
@@ -72,6 +72,16 @@ function tagList(v){return String(v||'').split(/[,、]/).map(s=>s.trim()).filter
 function itemById(id){return state.library.find(x=>x.id===id)}
 function allTags(){return [...new Set([...DEFAULT_TAGS,...EAR_TAGS,...state.library.flatMap(x=>x.tags||[])])].sort((a,b)=>a.localeCompare(b,'ja'))}
 function normalizeSearch(value){return String(value??'').normalize('NFKC').toLowerCase().replace(/[\s　]+/g,' ').trim()}
+function channelKey(value){const name=String(value??'').trim();return name?normalizeSearch(name):'__unset__'}
+function channelGroups(){
+  const groups=new Map();
+  state.library.forEach(item=>{
+    const key=channelKey(item.creator),name=String(item.creator||'').trim()||'チャンネル未設定';
+    if(!groups.has(key))groups.set(key,{key,name,count:0});
+    groups.get(key).count++;
+  });
+  return [...groups.values()].sort((a,b)=>a.name.localeCompare(b.name,'ja'));
+}
 function searchText(item){
   const timestamps=(item.timestamps||[]).flatMap(t=>[t.label,t.group,t.subtitle,t.parentLabel,...(t.tags||[])]);
   const sections=(item.favoriteSections||[]).flatMap(section=>[section.label,fmt(section.start),fmt(section.end)]);
@@ -133,6 +143,7 @@ function filtered(){
   if(state.currentView==='recent')items=state.recent.map(id=>itemById(id)).filter(Boolean);
   if(state.currentView==='resume')items=items.filter(x=>Number(x.resumeAt||0)>8).sort((a,b)=>(b.resumeUpdatedAt||0)-(a.resumeUpdatedAt||0));
   if(state.currentView==='sleep')items=items.filter(x=>x.sleepFriendly||x.tags?.includes('睡眠'));
+  if(state.currentView==='channel')items=items.filter(x=>channelKey(x.creator)===state.currentChannel);
   if(state.currentView==='playlist'){
     const playlist=state.playlists.find(p=>p.id===state.currentPlaylist);
     items=(playlist?.items||[]).map(id=>itemById(id)).filter(Boolean);
@@ -162,11 +173,22 @@ function renderFilters(){
   $$('.filter-chip').forEach(button=>button.onclick=()=>{state.filters.has(button.dataset.tag)?state.filters.delete(button.dataset.tag):state.filters.add(button.dataset.tag);renderFilters();renderSongList()});
 }
 function chipHtml(tag){return `<button class="chip filter-chip ${state.filters.has(tag)?'active':''}" data-tag="${attr(tag)}">${esc(tag)}</button>`}
+function renderChannels(){
+  const box=$('#channelList'),groups=channelGroups();
+  if(!box)return;
+  $('#channelCount').textContent=groups.length;
+  box.innerHTML=groups.map(group=>`<button class="channel-item ${state.currentView==='channel'&&state.currentChannel===group.key?'active':''}" data-channel-key="${attr(group.key)}"><span>${esc(group.name)}</span><span class="channel-item-count">${group.count}</span></button>`).join('');
+  [...box.children].forEach(button=>button.onclick=()=>{
+    state.currentView='channel';state.currentChannel=button.dataset.channelKey;state.currentPlaylist=null;
+    $$('.view-btn').forEach(node=>node.classList.remove('active'));
+    renderAll();
+  });
+}
 function renderPlaylists(){
   const box=$('#playlistList');
   box.innerHTML=state.playlists.map(p=>`<button class="playlist-item ${state.currentView==='playlist'&&state.currentPlaylist===p.id?'active':''}" data-id="${attr(p.id)}">${esc(p.name)} (${p.items.length})</button>`).join('');
   [...box.children].forEach(button=>button.onclick=()=>{
-    state.currentView='playlist';state.currentPlaylist=button.dataset.id;
+    state.currentView='playlist';state.currentPlaylist=button.dataset.id;state.currentChannel=null;
     $$('.view-btn').forEach(node=>node.classList.remove('active'));
     renderAll();
   });
@@ -202,6 +224,7 @@ function currentViewLabel(){
   if(state.currentView==='favorites')return 'FAVORITES';
   if(state.currentView==='recent')return 'RECENTLY PLAYED';
   if(state.currentView==='sleep')return 'SLEEP ASMR';
+  if(state.currentView==='channel'){const group=channelGroups().find(value=>value.key===state.currentChannel);return group?`チャンネル · ${group.name}`:'チャンネル'}
   if(state.currentView==='playlist')return 'PLAYLIST';
   return 'ASMR LIBRARY';
 }
@@ -261,7 +284,7 @@ function updateActiveTimestamp(currentTime){
   if(!rows.length||state.currentId!==state.selectedId){rows.forEach(row=>row.classList.remove('active'));return}
   let active=-1;rows.forEach((row,index)=>{if(Number(row.dataset.time)<=currentTime)active=index});rows.forEach((row,index)=>row.classList.toggle('active',index===active));
 }
-function renderAll(){renderPlaylists();renderFilters();renderSongList();renderSelection()}
+function renderAll(){renderChannels();renderPlaylists();renderFilters();renderSongList();renderSelection()}
 
 function openVideoDialog(item=null){
   metadataSeq++;clearTimeout(metadataTimer);
@@ -417,7 +440,7 @@ $('#videoUrl').addEventListener('input',queueMetadataFetch);$('#videoUrl').addEv
 $('#topFavBtn').onclick=toggleFavorite;$('#topEditBtn').onclick=()=>{const item=itemById(state.selectedId);if(item)openVideoDialog(item)};
 $('#filterBtn').onclick=()=>$('#filters').classList.toggle('hidden');$('#clearFiltersBtn').onclick=()=>{state.filters.clear();renderFilters();renderSongList()};
 $('#searchInput').oninput=event=>{state.query=event.target.value.trim();renderSongList()};$('#sortSelect').onchange=()=>{renderSongList();if(!itemById(state.selectedId)){state.selectedId=filtered()[0]?.id||null;renderSelection()}};
-$$('.view-btn[data-view]').forEach(button=>button.onclick=()=>{state.currentView=button.dataset.view;state.currentPlaylist=null;$$('.view-btn').forEach(node=>node.classList.toggle('active',node===button));renderAll()});
+$$('.view-btn[data-view]').forEach(button=>button.onclick=()=>{state.currentView=button.dataset.view;state.currentPlaylist=null;state.currentChannel=null;$$('.view-btn').forEach(node=>node.classList.toggle('active',node===button));renderAll()});
 $('#timestampImportBtn').onclick=openTimestampDialog;$('#parseTimestampsBtn').onclick=()=>{state.parsedTimestamps=parseTimestampText($('#timestampPaste').value);showTimestampPreview();document.dispatchEvent(new CustomEvent('asmrtube:parser-result',{detail:{rows:state.parsedTimestamps}}));diag('timestamp.parse',{count:state.parsedTimestamps.length})};$('#saveTimestampsBtn').onclick=saveParsedTimestamps;
 $('#newPlaylistBtn').onclick=()=>{$('#playlistName').value='';$('#playlistDialog').showModal()};$('#playlistForm').onsubmit=event=>{event.preventDefault();const name=$('#playlistName').value.trim();if(!name)return;state.playlists.push({id:uid(),name:name.slice(0,80),items:[]});if(save({reason:'playlist-create'})){$('#playlistDialog').close();renderPlaylists();toast('プレイリストを作成しました')}};
 $('#exportBtn').onclick=exportJson;$('#importInput').onchange=event=>{if(event.target.files[0])importJson(event.target.files[0]);event.target.value=''};
