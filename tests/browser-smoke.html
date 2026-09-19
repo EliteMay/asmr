@@ -22,7 +22,7 @@
 
     d.querySelector('#infoEdit').click();
     const volumeInput=d.querySelector('#itemVolume');volumeInput.value='0';
-    d.querySelector('#videoForm').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+    d.querySelector('#videoForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
     await new Promise(r=>setTimeout(r,30));
     assert(JSON.parse(localStorage.getItem(key)).library[0].volume===0,'item volume 0 was not preserved');
 
@@ -30,7 +30,7 @@
     assert(d.querySelector('#playlistDialog')?.open,'playlist manager did not open');
     const playlistToggle=d.querySelector('#playlistManageList input[type="checkbox"]');
     assert(playlistToggle&&!playlistToggle.checked,'playlist membership control is missing or incorrect');
-    playlistToggle.checked=true;playlistToggle.dispatchEvent(new Event('change',{bubbles:true}));
+    playlistToggle.checked=true;playlistToggle.dispatchEvent(new w.Event('change',{bubbles:true}));
     assert(JSON.parse(localStorage.getItem(key)).playlists[0].items.includes('smoke-item'),'playlist membership was not saved');
     d.querySelector('#playlistDialog').close();
 
@@ -57,10 +57,10 @@
     frame.style.width='560px';
     await new Promise(r=>setTimeout(r,60));
     const button=d.querySelector('#filterBtn');
-    assert(getComputedStyle(button).display!=='none','mobile filter control is hidden');
+    assert(w.getComputedStyle(button).display!=='none','mobile filter control is hidden');
     button.focus();
     const beforeText=d.querySelector('#playBtn').textContent;
-    button.dispatchEvent(new KeyboardEvent('keydown',{key:' ',code:'Space',bubbles:true,cancelable:true}));
+    button.dispatchEvent(new w.KeyboardEvent('keydown',{key:' ',code:'Space',bubbles:true,cancelable:true}));
     assert(d.querySelector('#playBtn').textContent===beforeText,'Space on focused button was stolen by playback shortcut');
 
     document.body.dataset.status='PASS';result.textContent='PASS';
