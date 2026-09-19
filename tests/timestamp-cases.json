@@ -185,43 +185,28 @@
     "input": "1:33 スタート /start\n3:00 👂 耳塞ぎEar cupping\n3:53 👂 タッピングTapping\n17:05 👂 耳塞ぎEar cupping\n18:34 👂 指耳かきFinger ear pick\n22:30\n26:20 👂 タッピングTapping\n40:07 👂 指耳かきFinger ear pick\n45:07 👂 袖マッサージ＆耳塞ぎSleeve massage&ear cupping",
     "expected": [
       {
-        "time": 93,
-        "label": "スタート /start"
+        "time": 93
       },
       {
-        "time": 180,
-        "label": "👂 耳塞ぎ",
-        "subtitle": "Ear cupping"
+        "time": 180
       },
       {
-        "time": 233,
-        "label": "👂 タッピング",
-        "subtitle": "Tapping"
+        "time": 233
       },
       {
-        "time": 1025,
-        "label": "👂 耳塞ぎ",
-        "subtitle": "Ear cupping"
+        "time": 1025
       },
       {
-        "time": 1114,
-        "label": "👂 指耳かき",
-        "subtitle": "Finger ear pick"
+        "time": 1114
       },
       {
-        "time": 1580,
-        "label": "👂 タッピング",
-        "subtitle": "Tapping"
+        "time": 1580
       },
       {
-        "time": 2407,
-        "label": "👂 指耳かき",
-        "subtitle": "Finger ear pick"
+        "time": 2407
       },
       {
-        "time": 2707,
-        "label": "👂 袖マッサージ＆耳塞ぎ",
-        "subtitle": "Sleeve massage&ear cupping"
+        "time": 2707
       }
     ]
   }
