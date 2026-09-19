@@ -10,7 +10,7 @@
   const fail=message=>{document.body.dataset.status='FAIL';result.textContent=`FAIL: ${message}`;throw new Error(message)};
   const assert=(condition,message)=>{if(!condition)fail(message)};
   try{
-    localStorage.setItem(key,JSON.stringify({library:[{id:'smoke-item',url:'https://www.youtube.com/watch?v=abcdefghijk',videoId:'abcdefghijk',title:'Smoke ASMR',creator:'Tester',tags:['耳かき'],rating:2,volume:35,favorite:false,sleepFriendly:false,timestamps:[],createdAt:1700000000000}],playlists:[],recent:[]}));
+    localStorage.setItem(key,JSON.stringify({library:[{id:'smoke-item',url:'https://www.youtube.com/watch?v=abcdefghijk',videoId:'abcdefghijk',title:'Smoke ASMR',creator:'Tester',tags:['耳かき'],rating:2,volume:35,favorite:false,sleepFriendly:false,timestamps:[],createdAt:1700000000000}],playlists:[{id:'smoke-playlist',name:'Sleep',items:[]}],recent:[]}));
     localStorage.setItem(settingsKey,JSON.stringify({theme:'violet',brightness:100,compact:false,showThumbs:false,reduceMotion:true,startDashboard:false}));
     const frame=document.createElement('iframe');frame.src='../index.html?smoke=1';frame.style.width='1200px';frame.style.height='800px';document.body.appendChild(frame);
     await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('app load timeout')),6000);frame.onload=()=>{clearTimeout(timer);setTimeout(resolve,500)}});
@@ -18,6 +18,21 @@
     assert(d.querySelector('.song-item'),'library item did not render');
     d.querySelector('.song-item').click();
     assert(d.querySelector('#nowTitle')?.textContent==='Smoke ASMR','selection did not update topbar');
+    assert(d.querySelector('#infoFavorite')&&d.querySelector('#infoEdit'),'selected item actions are missing from the info card');
+
+    d.querySelector('#infoEdit').click();
+    const volumeInput=d.querySelector('#itemVolume');volumeInput.value='0';
+    d.querySelector('#videoForm').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+    await new Promise(r=>setTimeout(r,30));
+    assert(JSON.parse(localStorage.getItem(key)).library[0].volume===0,'item volume 0 was not preserved');
+
+    d.querySelector('#infoPlaylist').click();
+    assert(d.querySelector('#playlistDialog')?.open,'playlist manager did not open');
+    const playlistToggle=d.querySelector('#playlistManageList input[type="checkbox"]');
+    assert(playlistToggle&&!playlistToggle.checked,'playlist membership control is missing or incorrect');
+    playlistToggle.checked=true;playlistToggle.dispatchEvent(new w.Event('change',{bubbles:true}));
+    assert(JSON.parse(localStorage.getItem(key)).playlists[0].items.includes('smoke-item'),'playlist membership was not saved');
+    d.querySelector('#playlistDialog').close();
 
     d.querySelector('#settingsPageBtn').click();
     assert(d.body.classList.contains('settings-mode'),'settings page did not open');
@@ -39,9 +54,13 @@
 
     assert(!d.querySelector('.song-item .thumb img'),'hidden thumbnails still create image requests');
 
-    const button=d.querySelector('#filterBtn');button.focus();
+    frame.style.width='560px';
+    await new Promise(r=>setTimeout(r,60));
+    const button=d.querySelector('#filterBtn');
+    assert(w.getComputedStyle(button).display!=='none','mobile filter control is hidden');
+    button.focus();
     const beforeText=d.querySelector('#playBtn').textContent;
-    button.dispatchEvent(new KeyboardEvent('keydown',{key:' ',code:'Space',bubbles:true,cancelable:true}));
+    button.dispatchEvent(new w.KeyboardEvent('keydown',{key:' ',code:'Space',bubbles:true,cancelable:true}));
     assert(d.querySelector('#playBtn').textContent===beforeText,'Space on focused button was stolen by playback shortcut');
 
     document.body.dataset.status='PASS';result.textContent='PASS';

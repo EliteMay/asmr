@@ -76,6 +76,11 @@ if(!app.includes('if(file.size>5*1024*1024)'))fail('JSON import file-size guard 
 
 if(!app.includes("asmrtube:save-failed")||!app.includes('restoreDurableState()'))fail('save failure rollback/feedback is missing');
 if(!app.includes('scheduleVolumeSave()')||!app.includes('flushVolumeSave()'))fail('volume persistence must be debounced and flushed');
+if(!app.includes('Number.isFinite(volumeInput)')||app.includes("Number($('#itemVolume').value)||35"))fail('item volume must preserve an explicit 0 value');
+if(app.includes('addToPlaylistPrompt')||app.includes('prompt(`追加先の番号'))fail('playlist selection must not use a numeric browser prompt');
+if(!html.includes('id="playlistManageList"')||!html.includes('id="playlistDialogHint"'))fail('playlist management dialog is missing');
+if(!app.includes("$('#infoFavorite').onclick=toggleFavorite")||!app.includes("$('#infoEdit').onclick"))fail('item card must expose favorite/edit actions for narrow layouts');
+if(!read('workspace.css').includes('.top-actions #filterBtn{display:inline-flex'))fail('mobile filter control must remain reachable');
 if(!app.includes('invalidateItem?.(editId)'))fail('changing a video URL must invalidate loaded player state');
 if(!app.includes("target?.closest?.('button,a,input,textarea,select"))fail('playback shortcuts must ignore focused interactive controls');
 if(!app.includes('function thumbnailsEnabled()')||!app.includes("showThumbs!==false"))fail('thumbnail suppression must avoid creating image requests, including first render');

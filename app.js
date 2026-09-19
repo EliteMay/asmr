@@ -8,6 +8,7 @@ let metadataTimer=null;
 let volumeSaveTimer=null;
 let lastDurableRaw='';
 let saveFailureToastAt=0;
+let playlistTargetId=null;
 
 function diag(type,detail={}){try{window.asmrtubeDiagnostics?.record(type,detail)}catch{}}
 function serializeState(){return JSON.stringify({library:state.library,playlists:state.playlists,recent:state.recent})}
@@ -233,10 +234,12 @@ function renderSelection(){
   $('#nowTitle').textContent=item.title;$('#nowCreator').textContent=item.creator||'配信者未設定';
   $('#topFavBtn').disabled=false;$('#topEditBtn').disabled=false;$('#timestampImportBtn').disabled=false;
   $('#topFavBtn').textContent=`${item.favorite?'★':'☆'} お気に入り`;
-  $('#infoCard').innerHTML=`<div class="info-title-row"><div class="info-title"><h3>${esc(item.title)}</h3><p>${esc(item.creator||'配信者未設定')}</p></div><span class="info-rating">${ratingLabel(item.rating)}</span></div><div class="tag-row">${(item.tags||[]).map(tag=>`<span class="tag">${esc(tag)}</span>`).join('')||'<span class="muted small">タグ未設定</span>'}</div><div class="info-actions"><button class="primary-soft" id="infoPlay">▶ 再生</button><button class="ghost-btn" id="infoImport">コメントからタイムスタンプ</button><button class="ghost-btn" id="infoPlaylist">プレイリストへ</button><button class="danger-btn" id="infoDelete">削除</button></div>`;
+  $('#infoCard').innerHTML=`<div class="info-title-row"><div class="info-title"><h3>${esc(item.title)}</h3><p>${esc(item.creator||'配信者未設定')}</p></div><span class="info-rating">${ratingLabel(item.rating)}</span></div><div class="tag-row">${(item.tags||[]).map(tag=>`<span class="tag">${esc(tag)}</span>`).join('')||'<span class="muted small">タグ未設定</span>'}</div><div class="info-actions"><button class="primary-soft" id="infoPlay">▶ 再生</button><button class="ghost-btn" id="infoImport">コメントからタイムスタンプ</button><button class="ghost-btn" id="infoFavorite">${item.favorite?'★':'☆'} お気に入り</button><button class="ghost-btn" id="infoEdit">編集</button><button class="ghost-btn" id="infoPlaylist">プレイリストへ</button><button class="danger-btn" id="infoDelete">削除</button></div>`;
   $('#infoPlay').onclick=()=>playItem(item.id);
   $('#infoImport').onclick=openTimestampDialog;
-  $('#infoPlaylist').onclick=()=>addToPlaylistPrompt(item.id);
+  $('#infoFavorite').onclick=toggleFavorite;
+  $('#infoEdit').onclick=()=>openVideoDialog(item);
+  $('#infoPlaylist').onclick=()=>openPlaylistDialog(item.id);
   $('#infoDelete').onclick=()=>deleteItem(item.id);
   renderTimestamps();
   document.dispatchEvent(new CustomEvent('asmrtube:selection-rendered',{detail:{item}}));
@@ -274,7 +277,8 @@ async function saveVideo(event){
   const editId=$('#editId').value,duplicate=state.library.find(item=>item.videoId===videoId&&item.id!==editId);if(duplicate)return toast(`「${duplicate.title}」として登録済みです`);
   if(!$('#videoTitle').value.trim()||!$('#creator').value.trim())await fetchYoutubeMetadata(url,{silent:true});
   const title=$('#videoTitle').value.trim();if(!title)return toast('タイトルを取得できませんでした。タイトルを入力してください');
-  const data={url:canonicalYoutubeUrl(videoId),videoId,title:title.slice(0,300),creator:$('#creator').value.trim().slice(0,220),tags:tagList($('#tags').value),rating:Number($('#rating').value),volume:Math.min(100,Math.max(0,Number($('#itemVolume').value)||35)),sleepFriendly:$('#sleepFriendly').checked};
+  const volumeRaw=$('#itemVolume').value.trim(),volumeInput=volumeRaw===''?35:Number(volumeRaw);
+  const data={url:canonicalYoutubeUrl(videoId),videoId,title:title.slice(0,300),creator:$('#creator').value.trim().slice(0,220),tags:tagList($('#tags').value),rating:Number($('#rating').value),volume:Number.isFinite(volumeInput)?Math.min(100,Math.max(0,volumeInput)):35,sleepFriendly:$('#sleepFriendly').checked};
   let changedVideo=false;
   if(editId){
     const item=itemById(editId);if(!item)return toast('編集対象が見つかりません');
@@ -353,11 +357,53 @@ function updatePlayerUi(){
   updateActiveTimestamp(time);
 }
 function resetLoop(){state.loopA=null;state.loopB=null;$('#loopBtn').textContent='A-B';$('#loopBtn').classList.remove('active');$('#loopBtn').setAttribute('aria-pressed','false');$('#loopStatus').textContent='区間リピート: OFF';$('#loopStatus').classList.remove('active')}
-function addToPlaylistPrompt(id){
-  if(!state.playlists.length)return toast('先にプレイリストを作成してください');
-  const names=state.playlists.map((playlist,index)=>`${index+1}: ${playlist.name}`).join('\n'),number=Number(prompt(`追加先の番号を入力してください\n${names}`)),playlist=state.playlists[number-1];if(!playlist)return;
-  if(playlist.items.includes(id))return toast('すでにこのプレイリストに入っています');
-  playlist.items.push(id);if(save({reason:'playlist-add'})){renderPlaylists();toast(`${playlist.name}に追加しました`)}
+function openPlaylistDialog(targetId=null){
+  playlistTargetId=targetId&&itemById(targetId)?targetId:null;
+  const target=itemById(playlistTargetId);
+  $('#playlistName').value='';
+  $('#playlistDialogHint').textContent=target
+    ? `「${target.title}」を入れるプレイリストを選べます。`
+    : 'プレイリストの作成・整理ができます。';
+  renderPlaylistManager();
+  $('#playlistDialog').showModal();
+}
+function renderPlaylistManager(){
+  const box=$('#playlistManageList');if(!box)return;
+  const target=itemById(playlistTargetId);
+  box.replaceChildren();
+  if(!state.playlists.length){
+    const empty=document.createElement('p');empty.className='playlist-manage-empty';empty.textContent='プレイリストはまだありません。上で名前を入力して作成できます。';box.appendChild(empty);return;
+  }
+  for(const playlist of state.playlists){
+    const row=document.createElement('div');row.className='playlist-manage-row';
+    const label=document.createElement('label');label.className='playlist-manage-choice';
+    const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.disabled=!target;checkbox.checked=!!target&&playlist.items.includes(target.id);
+    const copy=document.createElement('span');const name=document.createElement('strong');name.textContent=playlist.name;const count=document.createElement('small');count.textContent=`${playlist.items.length}件`;copy.append(name,count);label.append(checkbox,copy);
+    checkbox.addEventListener('change',()=>{
+      if(!target)return;
+      playlist.items=checkbox.checked?[...new Set([...playlist.items,target.id])]:playlist.items.filter(id=>id!==target.id);
+      const ok=save({reason:checkbox.checked?'playlist-add':'playlist-remove'});
+      renderPlaylists();renderPlaylistManager();if(state.currentView==='playlist')renderSongList();
+      if(ok)toast(checkbox.checked?`「${playlist.name}」に追加しました`:`「${playlist.name}」から外しました`);
+    });
+    const del=document.createElement('button');del.type='button';del.className='playlist-manage-delete';del.textContent='削除';
+    del.addEventListener('click',()=>{
+      if(!confirm(`プレイリスト「${playlist.name}」を削除しますか？ ASMR本体は消えません。`))return;
+      state.playlists=state.playlists.filter(value=>value.id!==playlist.id);
+      if(state.currentView==='playlist'&&state.currentPlaylist===playlist.id){state.currentView='all';state.currentPlaylist=null}
+      const ok=save({reason:'playlist-delete'});renderAll();renderPlaylistManager();if(ok)toast('プレイリストを削除しました');
+    });
+    row.append(label,del);box.appendChild(row);
+  }
+}
+function createPlaylistFromDialog(){
+  const name=$('#playlistName').value.trim();if(!name)return toast('プレイリスト名を入力してください');
+  if(state.playlists.some(playlist=>normalizeSearch(playlist.name)===normalizeSearch(name)))return toast('同じ名前のプレイリストがあります');
+  const target=itemById(playlistTargetId);
+  state.playlists.push({id:uid(),name:name.slice(0,80),items:target?[target.id]:[]});
+  if(!save({reason:'playlist-create'})){renderPlaylistManager();return}
+  $('#playlistName').value='';renderPlaylists();renderPlaylistManager();
+  toast(target?`「${name}」を作成してASMRを追加しました`:`プレイリスト「${name}」を作成しました`);
 }
 function exportJson(){
   const config=window.ASMRTUBE_CONFIG||{};
@@ -407,7 +453,7 @@ $('#filterBtn').onclick=()=>$('#filters').classList.toggle('hidden');$('#clearFi
 $('#searchInput').oninput=event=>{state.query=event.target.value.trim();renderSongList()};$('#sortSelect').onchange=()=>{renderSongList();if(!itemById(state.selectedId)){state.selectedId=filtered()[0]?.id||null;renderSelection()}};
 $$('.view-btn[data-view]').forEach(button=>button.onclick=()=>{state.currentView=button.dataset.view;state.currentPlaylist=null;$$('.view-btn').forEach(node=>node.classList.toggle('active',node===button));renderAll()});
 $('#timestampImportBtn').onclick=openTimestampDialog;$('#parseTimestampsBtn').onclick=()=>{state.parsedTimestamps=parseTimestampText($('#timestampPaste').value);showTimestampPreview();document.dispatchEvent(new CustomEvent('asmrtube:parser-result',{detail:{rows:state.parsedTimestamps}}));diag('timestamp.parse',{count:state.parsedTimestamps.length})};$('#saveTimestampsBtn').onclick=saveParsedTimestamps;
-$('#newPlaylistBtn').onclick=()=>{$('#playlistName').value='';$('#playlistDialog').showModal()};$('#playlistForm').onsubmit=event=>{event.preventDefault();const name=$('#playlistName').value.trim();if(!name)return;state.playlists.push({id:uid(),name:name.slice(0,80),items:[]});if(save({reason:'playlist-create'})){$('#playlistDialog').close();renderPlaylists();toast('プレイリストを作成しました')}};
+$('#newPlaylistBtn').onclick=()=>openPlaylistDialog(null);$('#playlistForm').onsubmit=event=>{event.preventDefault();createPlaylistFromDialog()};$('[data-playlist-close]').forEach(button=>button.onclick=()=>$('#playlistDialog').close());$('#playlistDialog').addEventListener('close',()=>{playlistTargetId=null});
 $('#exportBtn').onclick=exportJson;$('#importInput').onchange=event=>{if(event.target.files[0])importJson(event.target.files[0]);event.target.value=''};
 $('#playBtn').onclick=()=>{const item=itemById(state.selectedId);if(!item)return;window.asmrtubeYoutubeRuntime?.toggleSelected?.(item)};
 $('#prevBtn').onclick=()=>step(-1);$('#nextBtn').onclick=()=>step(1);

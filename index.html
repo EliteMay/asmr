@@ -219,11 +219,14 @@
     </form>
   </dialog>
 
-  <dialog id="playlistDialog" class="dialog small-dialog">
+  <dialog id="playlistDialog" class="dialog playlist-dialog">
     <form method="dialog" id="playlistForm">
-      <div class="dialog-head"><h3>プレイリスト作成</h3><button value="cancel" class="icon-btn subtle">×</button></div>
-      <label>名前<input id="playlistName" required maxlength="40"></label>
-      <div class="dialog-actions"><button value="cancel" class="ghost-btn">キャンセル</button><button type="submit" class="primary-btn">作成</button></div>
+      <div class="dialog-head"><div><div class="eyebrow">PLAYLIST</div><h3>プレイリスト管理</h3><p id="playlistDialogHint" class="muted small">プレイリストの作成・整理ができます。</p></div><button type="button" class="icon-btn subtle" data-playlist-close aria-label="閉じる">×</button></div>
+      <label>新しいプレイリスト
+        <div class="playlist-create-row"><input id="playlistName" required maxlength="40" placeholder="例：睡眠用"><button type="submit" class="primary-soft">作成</button></div>
+      </label>
+      <div id="playlistManageList" class="playlist-manage-list" aria-live="polite"></div>
+      <div class="dialog-actions"><button type="button" class="primary-btn" data-playlist-close>完了</button></div>
     </form>
   </dialog>
 

@@ -1,13 +1,23 @@
-# ASMRTube v3.0.1
+# ASMRTube v3.0.2
 
 YouTube上のASMRを自分用に整理・再生し、コメント欄にある多様なタイムスタンプを再利用するための静的Webアプリです。
 
 GitHub Pagesだけで動作し、YouTube Data APIキーは不要です。
 
-- Adopted Guide: `web-project-guide` v1.11.0
+- Adopted Guide: `web-project-guide` v1.22.0
 - Profiles: `STATIC + DATA + MEDIA + TOOL`
 - Visual Direction: `ASMR Media Deck`
 - Visual Status: Candidate / User review pending
+
+## v3.0.2 usability update
+
+- 作品音量に `0` を保存できるよう修正
+- プレイリスト追加を番号入力の `prompt` から管理ダイアログへ変更
+- プレイリストへの追加 / 解除 / 削除を同じ画面で操作可能
+- 作品情報カードへ「お気に入り」「編集」を追加し、狭い画面でも主要操作へ到達可能
+- 900px以下でもタグ絞り込みをTopbarから利用可能
+- Sound Mapの見出し / タブ等の極小文字を読みやすく調整
+- Browser Smokeへ上記のRegression確認を追加
 
 ## v3 Visual
 
