@@ -18,6 +18,25 @@
     assert(d.querySelector('.song-item'),'library item did not render');
     d.querySelector('.song-item').click();
     assert(d.querySelector('#nowTitle')?.textContent==='Smoke ASMR','selection did not update topbar');
+
+    d.querySelector('#newPlaylistBtn').click();
+    assert(d.querySelector('#playlistDialog')?.open,'playlist dialog did not open');
+    assert(d.querySelector('#playlistName')?.value==='','playlist name was not reset');
+    d.querySelector('#playlistDialog [data-dialog-close]').click();
+    assert(!d.querySelector('#playlistDialog')?.open,'playlist close button was blocked by required validation');
+
+    d.querySelector('#topAddBtn').click();
+    assert(d.querySelector('#videoDialog')?.open,'video dialog did not open');
+    assert(d.querySelector('#videoUrl')?.value==='','video URL was not empty for new item');
+    d.querySelector('#videoDialog [data-dialog-close]').click();
+    assert(!d.querySelector('#videoDialog')?.open,'video close button was blocked by required validation');
+
+    d.querySelector('#saveFavoriteSectionBtn')?.click();
+    assert(d.querySelector('#favoriteSectionDialog')?.open,'favorite section dialog did not open');
+    d.querySelector('#favoriteSectionDialog [data-dialog-close]').click();
+    assert(!d.querySelector('#favoriteSectionDialog')?.open,'favorite section close button did not close');
+    assert(d.querySelector('#infoCard .favorite-section-empty'),'closing favorite section dialog accidentally submitted the form');
+
     assert(d.querySelector('#countResume')?.textContent==='1','resume count did not render');
     d.querySelector('.view-btn[data-view="resume"]').click();
     assert(d.querySelectorAll('.song-item').length===1,'resume view did not show resumable item');
