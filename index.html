@@ -189,7 +189,7 @@
 
   <dialog id="videoDialog" class="dialog">
     <form method="dialog" id="videoForm">
-      <div class="dialog-head"><div><div class="eyebrow">ASMR ITEM</div><h3 id="videoDialogTitle">ASMRを追加</h3></div><button value="cancel" class="icon-btn subtle">×</button></div>
+      <div class="dialog-head"><div><div class="eyebrow">ASMR ITEM</div><h3 id="videoDialogTitle">ASMRを追加</h3></div><button type="button" data-dialog-close class="icon-btn subtle">×</button></div>
       <label>YouTube URL
         <div class="metadata-url-row"><input id="videoUrl" required placeholder="https://www.youtube.com/watch?v=..."><button type="button" class="ghost-btn" id="metadataRefreshBtn">情報取得</button></div>
         <span id="metadataStatus" class="field-hint">URLを貼るとタイトルとチャンネル名を自動取得します。</span>
@@ -199,32 +199,32 @@
       <div class="two-col"><label>評価<select id="rating"><option value="0">未評価</option><option value="1">普通</option><option value="2">好き</option><option value="3">かなり好き</option><option value="4">神</option></select></label><label>作品音量<input id="itemVolume" type="number" min="0" max="100" value="35"></label></div>
       <label class="check-row"><input id="sleepFriendly" type="checkbox">睡眠向けとして登録</label>
       <input type="hidden" id="editId">
-      <div class="dialog-actions"><button value="cancel" class="ghost-btn">キャンセル</button><button type="submit" class="primary-btn">保存</button></div>
+      <div class="dialog-actions"><button type="button" data-dialog-close class="ghost-btn">キャンセル</button><button type="submit" class="primary-btn">保存</button></div>
     </form>
   </dialog>
 
   <dialog id="timestampDialog" class="dialog timestamp-dialog">
     <form method="dialog" id="timestampForm">
-      <div class="dialog-head"><div><div class="eyebrow">YOUTUBE COMMENT</div><h3>コメントからタイムスタンプ取込</h3><p class="muted small">普通の時刻、Markdownリンク、ハイフン区切り、見出し＋左右、▷親 / ┗子、1行に潰れたコメント、YouTube絵文字混在などを自動判定します。</p></div><button value="cancel" class="icon-btn subtle">×</button></div>
+      <div class="dialog-head"><div><div class="eyebrow">YOUTUBE COMMENT</div><h3>コメントからタイムスタンプ取込</h3><p class="muted small">普通の時刻、Markdownリンク、ハイフン区切り、見出し＋左右、▷親 / ┗子、1行に潰れたコメント、YouTube絵文字混在などを自動判定します。</p></div><button type="button" data-dialog-close class="icon-btn subtle">×</button></div>
       <textarea id="timestampPaste" rows="8" placeholder="YouTubeコメントをそのまま貼り付け"></textarea>
       <div class="parse-row"><button type="button" id="parseTimestampsBtn" class="primary-soft">タイムスタンプを解析</button><span id="parseSummary" class="muted small"></span></div>
       <div id="timestampPreview" class="timestamp-preview"></div>
-      <div class="dialog-actions"><button value="cancel" class="ghost-btn">キャンセル</button><button id="saveTimestampsBtn" type="button" class="primary-btn" disabled>解析結果で置き換え / 追加</button></div>
+      <div class="dialog-actions"><button type="button" data-dialog-close class="ghost-btn">キャンセル</button><button id="saveTimestampsBtn" type="button" class="primary-btn" disabled>解析結果で置き換え / 追加</button></div>
     </form>
   </dialog>
 
   <dialog id="sleepDialog" class="dialog small-dialog">
     <form method="dialog">
-      <div class="dialog-head"><div><div class="eyebrow">SLEEP TIMER</div><h3>スリープタイマー</h3></div><button value="cancel" class="icon-btn subtle">×</button></div>
+      <div class="dialog-head"><div><div class="eyebrow">SLEEP TIMER</div><h3>スリープタイマー</h3></div><button type="button" data-dialog-close class="icon-btn subtle">×</button></div>
       <div class="sleep-options"><button value="cancel" data-sleep="15">15分</button><button value="cancel" data-sleep="30">30分</button><button value="cancel" data-sleep="45">45分</button><button value="cancel" data-sleep="60">60分</button><button value="cancel" data-sleep="90">90分</button><button value="cancel" data-sleep="0">解除</button></div>
     </form>
   </dialog>
 
   <dialog id="playlistDialog" class="dialog small-dialog">
     <form method="dialog" id="playlistForm">
-      <div class="dialog-head"><h3>プレイリスト作成</h3><button value="cancel" class="icon-btn subtle">×</button></div>
+      <div class="dialog-head"><h3>プレイリスト作成</h3><button type="button" data-dialog-close class="icon-btn subtle">×</button></div>
       <label>名前<input id="playlistName" required maxlength="40"></label>
-      <div class="dialog-actions"><button value="cancel" class="ghost-btn">キャンセル</button><button type="submit" class="primary-btn">作成</button></div>
+      <div class="dialog-actions"><button type="button" data-dialog-close class="ghost-btn">キャンセル</button><button type="submit" class="primary-btn">作成</button></div>
     </form>
   </dialog>
 
