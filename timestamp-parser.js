@@ -134,9 +134,9 @@
   function makeEntries(source,tokens){
     return tokens.map((token,i)=>{
       const next=tokens[i+1],segment=source.slice(token.end,next?next.start:source.length),pieces=splitSegment(segment);
-      const cleaned=cleanText(pieces[0]||'')||'タイムスタンプ',bi=splitBilingual(cleaned);
+      const explicitLabel=cleanText(pieces[0]||''),cleaned=explicitLabel||'タイムスタンプ',bi=splitBilingual(cleaned);
       const candidate=pieces.length>=2?cleanHeading(pieces[pieces.length-1]):'';
-      return {...token,label:bi.label||'タイムスタンプ',subtitle:bi.subtitle,candidate};
+      return {...token,label:bi.label||'タイムスタンプ',subtitle:bi.subtitle,candidate,hasExplicitLabel:!!explicitLabel};
     });
   }
   function dedupe(rows){
@@ -165,6 +165,7 @@
 
     for(let i=0;i<entries.length;i++){
       const entry=entries[i],next=entries[i+1];
+      if(entry.mode==='bare'&&!entry.hasExplicitLabel)continue;
       let role='item',group='',parentTime=null,parentLabel='',inferred=false;
       if(sectionKind==='side'&&!isChildLabel(entry.label)&&entry.markerType==='none'){section='';sectionKind='';activeParent=null}
       if(entry.markerType==='parent'){role='parent';group=sectionKind==='explicit'?section:''}

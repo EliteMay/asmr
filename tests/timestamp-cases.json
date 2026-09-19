@@ -3,85 +3,211 @@
     "name": "plain markdown timestamps",
     "input": "[1:28](https://www.youtube.com/watch?v=test&t=88s) 音入り [12:35](https://www.youtube.com/watch?v=test&t=755s) 耳かき",
     "expected": [
-      {"time":88,"label":"音入り","role":"item"},
-      {"time":755,"label":"耳かき","role":"item"}
+      {
+        "time": 88,
+        "label": "音入り",
+        "role": "item"
+      },
+      {
+        "time": 755,
+        "label": "耳かき",
+        "role": "item"
+      }
     ]
   },
   {
     "name": "hyphen separated labels",
     "input": "[01:28](https://www.youtube.com/watch?v=test&t=88s)-声入り   [02:26](https://www.youtube.com/watch?v=test&t=146s)-(左右の耳をチェック)",
     "expected": [
-      {"time":88,"label":"声入り"},
-      {"time":146,"label":"(左右の耳をチェック)"}
+      {
+        "time": 88,
+        "label": "声入り"
+      },
+      {
+        "time": 146,
+        "label": "(左右の耳をチェック)"
+      }
     ]
   },
   {
     "name": "collapsed heading with left and right children",
     "input": "[2:41](https://www.youtube.com/watch?v=test&t=161s) 炭酸  耳ふー [4:46](https://www.youtube.com/watch?v=test&t=286s) 右 [5:38](https://www.youtube.com/watch?v=test&t=338s) 左  [5:55](https://www.youtube.com/watch?v=test&t=355s) 耳塞ぎ",
     "expected": [
-      {"time":161,"label":"炭酸","group":""},
-      {"time":286,"label":"右","group":"耳ふー","role":"child"},
-      {"time":338,"label":"左","group":"耳ふー","role":"child"},
-      {"time":355,"label":"耳塞ぎ","group":""}
+      {
+        "time": 161,
+        "label": "炭酸",
+        "group": ""
+      },
+      {
+        "time": 286,
+        "label": "右",
+        "group": "耳ふー",
+        "role": "child"
+      },
+      {
+        "time": 338,
+        "label": "左",
+        "group": "耳ふー",
+        "role": "child"
+      },
+      {
+        "time": 355,
+        "label": "耳塞ぎ",
+        "group": ""
+      }
     ]
   },
   {
     "name": "section parent child markers",
     "input": "お耳マッサージ  ▷[04:22](https://www.youtube.com/watch?v=test&t=262s) お耳マッサージからしてこうかな  ┗[05:00](https://www.youtube.com/watch?v=test&t=300s) さわさわ  ▷[06:11](https://www.youtube.com/watch?v=test&t=371s) お耳だいぶ凝ってますね ┗[07:26](https://www.youtube.com/watch?v=test&t=446s) こりこり",
     "expected": [
-      {"time":262,"group":"お耳マッサージ","role":"parent"},
-      {"time":300,"group":"お耳マッサージ","role":"child","parentTime":262},
-      {"time":371,"group":"お耳マッサージ","role":"parent"},
-      {"time":446,"group":"お耳マッサージ","role":"child","parentTime":371}
+      {
+        "time": 262,
+        "group": "お耳マッサージ",
+        "role": "parent"
+      },
+      {
+        "time": 300,
+        "group": "お耳マッサージ",
+        "role": "child",
+        "parentTime": 262
+      },
+      {
+        "time": 371,
+        "group": "お耳マッサージ",
+        "role": "parent"
+      },
+      {
+        "time": 446,
+        "group": "お耳マッサージ",
+        "role": "child",
+        "parentTime": 371
+      }
     ]
   },
   {
     "name": "hybrid flat and child marker",
     "input": "[38:10](https://www.youtube.com/watch?v=test&t=2290s) スライム  └[41:20](https://www.youtube.com/watch?v=test&t=2480s) 握力52kgでスライム潰すww [43:10](https://www.youtube.com/watch?v=test&t=2590s) もっと入り込んで",
     "expected": [
-      {"time":2290,"role":"item"},
-      {"time":2480,"role":"child","parentTime":2290},
-      {"time":2590,"role":"item"}
+      {
+        "time": 2290,
+        "role": "item"
+      },
+      {
+        "time": 2480,
+        "role": "child",
+        "parentTime": 2290
+      },
+      {
+        "time": 2590,
+        "role": "item"
+      }
     ]
   },
   {
     "name": "bilingual labels",
     "input": "[00:00](https://www.youtube.com/watch?v=test) スタート Start [1:40](https://www.youtube.com/watch?v=test&t=100s) 柔らかいタオル Soft Towel [22:05](https://www.youtube.com/watch?v=test&t=1325s) タオルとんとんTowel Tapping",
     "expected": [
-      {"time":0,"label":"スタート","subtitle":"Start"},
-      {"time":100,"label":"柔らかいタオル","subtitle":"Soft Towel"},
-      {"time":1325,"label":"タオルとんとん","subtitle":"Towel Tapping"}
+      {
+        "time": 0,
+        "label": "スタート",
+        "subtitle": "Start"
+      },
+      {
+        "time": 100,
+        "label": "柔らかいタオル",
+        "subtitle": "Soft Towel"
+      },
+      {
+        "time": 1325,
+        "label": "タオルとんとん",
+        "subtitle": "Towel Tapping"
+      }
     ]
   },
   {
     "name": "parenthesized chapter format",
     "input": "⌨️ (00:00:00) Introduction\n⌨️ (00:02:02) Course overview",
     "expected": [
-      {"time":0,"label":"Introduction"},
-      {"time":122,"label":"Course overview"}
+      {
+        "time": 0,
+        "label": "Introduction"
+      },
+      {
+        "time": 122,
+        "label": "Course overview"
+      }
     ]
   },
   {
     "name": "custom emoji markdown noise",
     "input": "[7:08](https://www.youtube.com/watch?v=test&t=428s) 狭いんだけど→デコピン[草くさ](https://yt3.googleusercontent.com/emoji) [8:14](https://www.youtube.com/watch?v=test&t=494s) 近くてたすかる",
     "expected": [
-      {"time":428,"label":"狭いんだけど→デコピン"},
-      {"time":494,"label":"近くてたすかる"}
+      {
+        "time": 428,
+        "label": "狭いんだけど→デコピン"
+      },
+      {
+        "time": 494,
+        "label": "近くてたすかる"
+      }
     ]
   },
   {
     "name": "url-only offsets",
     "input": "https://youtu.be/abcdefghijk?t=1m30s Intro https://youtu.be/abcdefghijk?start=120 Next",
     "expected": [
-      {"time":90,"label":"Intro","sourceStyle":"url"},
-      {"time":120,"label":"Next","sourceStyle":"url"}
+      {
+        "time": 90,
+        "label": "Intro",
+        "sourceStyle": "url"
+      },
+      {
+        "time": 120,
+        "label": "Next",
+        "sourceStyle": "url"
+      }
     ]
   },
   {
     "name": "two hour timestamp",
     "input": "[2:07:55](https://www.youtube.com/watch?v=test&t=7675s) 頭なでなで Head Pats",
     "expected": [
-      {"time":7675,"label":"頭なでなで","subtitle":"Head Pats"}
+      {
+        "time": 7675,
+        "label": "頭なでなで",
+        "subtitle": "Head Pats"
+      }
+    ]
+  },
+  {
+    "name": "ignore unlabeled stray bare time in copied comment",
+    "input": "1:33 スタート /start\n3:00 👂 耳塞ぎEar cupping\n3:53 👂 タッピングTapping\n17:05 👂 耳塞ぎEar cupping\n18:34 👂 指耳かきFinger ear pick\n22:30\n26:20 👂 タッピングTapping\n40:07 👂 指耳かきFinger ear pick\n45:07 👂 袖マッサージ＆耳塞ぎSleeve massage&ear cupping",
+    "expected": [
+      {
+        "time": 93
+      },
+      {
+        "time": 180
+      },
+      {
+        "time": 233
+      },
+      {
+        "time": 1025
+      },
+      {
+        "time": 1114
+      },
+      {
+        "time": 1580
+      },
+      {
+        "time": 2407
+      },
+      {
+        "time": 2707
+      }
     ]
   }
 ]
