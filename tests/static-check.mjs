@@ -38,7 +38,7 @@ const retired=['app-quality-v21.js','timestamp-polish-v21.js','library-tools-v22
 for(const file of retired)if(exists(file))fail(`retired patch runtime must be removed: ${file}`);
 
 const meta=JSON.parse(read('project-meta.json'));
-const config=read('app-config.js'),app=read('app.js'),runtime=read('youtube-runtime.js'),appearance=read('appearance.js'),shell=read('ui-enhancements.js'),core=read('core-utils.js'),diagnostics=read('diagnostics.js'),timestampUi=read('timestamp-ui.js');
+const config=read('app-config.js'),app=read('app.js'),runtime=read('youtube-runtime.js'),appearance=read('appearance.js'),shell=read('ui-enhancements.js'),libraryTools=read('library-tools.js'),core=read('core-utils.js'),diagnostics=read('diagnostics.js'),timestampUi=read('timestamp-ui.js');
 const configString=key=>config.match(new RegExp(`${key}:\\s*['\"]([^'\"]+)['\"]`))?.[1]||null;
 const configNumber=key=>{const value=config.match(new RegExp(`${key}:\\s*(\\d+)`))?.[1];return value==null?null:Number(value)};
 if(configString('appVersion')!==meta.appVersion)fail(`appVersion mismatch: config=${configString('appVersion')} meta=${meta.appVersion}`);
@@ -79,6 +79,8 @@ if(!app.includes('scheduleVolumeSave()')||!app.includes('flushVolumeSave()'))fai
 if(!app.includes('invalidateItem?.(editId)'))fail('changing a video URL must invalidate loaded player state');
 if(!app.includes("target?.closest?.('button,a,input,textarea,select"))fail('playback shortcuts must ignore focused interactive controls');
 if(!app.includes('function thumbnailsEnabled()')||!app.includes("showThumbs!==false"))fail('thumbnail suppression must avoid creating image requests, including first render');
+if(!html.includes('data-view="resume"')||!html.includes('id="countResume"')||!app.includes("state.currentView==='resume'"))fail('resume navigation/view is missing');
+if(!libraryTools.includes("document.documentElement.dataset.thumbs!=='0'")||!libraryTools.includes('showThumbs?`<img src='))fail('creator library must honor thumbnail suppression without creating image requests');
 if(!shell.includes('PRE_RESTORE_KEY')||!shell.includes('snapshotUndoRestoreBtn'))fail('pre-restore recovery UI is missing');
 if(!shell.includes('renderSelection()'))fail('dashboard exit must restore canonical topbar selection');
 

@@ -131,6 +131,7 @@ function filtered(){
   let items=[...state.library];
   if(state.currentView==='favorites')items=items.filter(x=>x.favorite);
   if(state.currentView==='recent')items=state.recent.map(id=>itemById(id)).filter(Boolean);
+  if(state.currentView==='resume')items=items.filter(x=>Number(x.resumeAt||0)>8).sort((a,b)=>(b.resumeUpdatedAt||0)-(a.resumeUpdatedAt||0));
   if(state.currentView==='sleep')items=items.filter(x=>x.sleepFriendly||x.tags?.includes('睡眠'));
   if(state.currentView==='playlist'){
     const playlist=state.playlists.find(p=>p.id===state.currentPlaylist);
@@ -144,7 +145,7 @@ function filtered(){
   const sort=$('#sortSelect')?.value||'new';
   if(sort==='title')items.sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'ja'));
   else if(sort==='rating')items.sort((a,b)=>(b.rating||0)-(a.rating||0)||(b.createdAt||0)-(a.createdAt||0));
-  else if(state.currentView!=='recent')items.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  else if(state.currentView!=='recent'&&state.currentView!=='resume')items.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
   return items;
 }
 
@@ -152,6 +153,7 @@ function renderCounts(){
   $('#countAll').textContent=state.library.length;
   $('#countFav').textContent=state.library.filter(x=>x.favorite).length;
   $('#countRecent').textContent=state.recent.filter(id=>itemById(id)).length;
+  $('#countResume').textContent=state.library.filter(x=>Number(x.resumeAt||0)>8).length;
   $('#countSleep').textContent=state.library.filter(x=>x.sleepFriendly||x.tags?.includes('睡眠')).length;
 }
 function renderFilters(){
