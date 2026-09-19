@@ -21,7 +21,8 @@ Library rail
 
 - YouTube作品をタイトル・チャンネル・タグ・評価で整理
 - 登録済みのチャンネル名から自動でチャンネル別ライブラリを生成
-- Search / View / Channel / Playlist / Libraryを分けて表示
+- Search / View / Channel / Tag / Playlist / Libraryを分けて表示
+- LyricTubeで有効だった「分類を左Railから直接選ぶ」構造だけを再利用し、チャンネル・タグを件数付きで選択可能にする
 - 選択中作品はAccent line + Surface差で表示
 - 「サムネイル非表示」時は画像要素自体を生成せず、不要な画像通信を避ける
 
@@ -165,6 +166,8 @@ GitHub Actions: `.github/workflows/quality-check.yml`
   - Dashboard exit topbar restore
   - Thumbnail-off image suppression
   - チャンネル自動分類 / チャンネル絞り込み
+  - タグ自動分類 / タグ絞り込み
+  - Sidebar単一スクロール領域
   - Focused buttonのSpaceキー非横取り
 
 ## Visual Source of Truth

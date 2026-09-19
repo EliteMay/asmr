@@ -85,7 +85,9 @@ for(const [name,source] of [['index.html',html],['library-tools.js',libraryTools
 }
 if(!html.includes('data-view="resume"')||!html.includes('id="countResume"')||!app.includes("state.currentView==='resume'"))fail('resume navigation/view is missing');
 if(!html.includes('id="channelList"')||!html.includes('id="channelCount"')||!app.includes('function renderChannels()')||!app.includes("state.currentView==='channel'"))fail('channel grouping/navigation is missing');
-if(!shell.includes('.channel-item')||!appearance.includes('.channel-item'))fail('channel navigation must participate in dashboard/mobile/settings exits');
+if(!html.includes('id="tagSidebarList"')||!html.includes('id="tagSidebarCount"')||!app.includes('function renderSidebarTags()')||!app.includes("state.currentView==='tag'"))fail('tag sidebar grouping/navigation is missing');
+if(!html.includes('class="sidebar-section-label"')||!html.includes('class="nav-icon"')||!html.includes('class="sidebar-scroll"'))fail('LyricTube-style grouped library navigation structure is missing');
+if(!shell.includes('.channel-item')||!appearance.includes('.channel-item')||!shell.includes('.tag-sidebar-item')||!appearance.includes('.tag-sidebar-item'))fail('channel/tag navigation must participate in dashboard/mobile/settings exits');
 if(!libraryTools.includes("document.documentElement.dataset.thumbs!=='0'")||!libraryTools.includes('showThumbs?`<img src='))fail('creator library must honor thumbnail suppression without creating image requests');
 if(!shell.includes('PRE_RESTORE_KEY')||!shell.includes('snapshotUndoRestoreBtn'))fail('pre-restore recovery UI is missing');
 if(!shell.includes('renderSelection()'))fail('dashboard exit must restore canonical topbar selection');
