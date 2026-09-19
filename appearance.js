@@ -100,6 +100,7 @@
   function showSettings(event){
     event?.preventDefault?.();event?.stopPropagation?.();
     try{window.asmrtubeProductShell?.hideDashboard?.()}catch{}
+    try{window.asmrtubeBrowse?.hide?.()}catch{}
     const page=$('#settingsPage');if(!page)return;
     document.body.classList.remove('mobile-sidebar-open');
     document.body.classList.add('settings-mode');
@@ -133,7 +134,7 @@
   function bindWorkspaceExit(){
     document.addEventListener('click',event=>{
       if(!document.body.classList.contains('settings-mode'))return;
-      if(event.target.closest('.song-item,.playlist-item,.channel-item,.view-btn,#dashboardBtn,#topAddBtn,#addVideoBtn'))hideSettings();
+      if(event.target.closest('.song-item,.playlist-item,.channel-item,.view-btn,.sidebar-page-btn,#dashboardBtn,#topAddBtn,#addVideoBtn'))hideSettings();
     },true);
   }
 
