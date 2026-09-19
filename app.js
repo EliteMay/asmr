@@ -399,6 +399,16 @@ function setupPlaybackShortcuts(){
     }
   });
 }
+function setupDialogCloseButtons(){
+  document.addEventListener('click',event=>{
+    const button=event.target.closest?.('[data-dialog-close]');
+    if(!button)return;
+    const dialog=button.closest('dialog');
+    if(!dialog?.open)return;
+    event.preventDefault();
+    dialog.close('cancel');
+  });
+}
 function scheduleVolumeSave(){clearTimeout(volumeSaveTimer);volumeSaveTimer=setTimeout(()=>save({silent:true,reason:'volume'}),350)}
 function flushVolumeSave(){clearTimeout(volumeSaveTimer);volumeSaveTimer=null;save({silent:true,reason:'volume'})}
 
@@ -419,4 +429,4 @@ $('#loopBtn').setAttribute('aria-pressed','false');$('#loopBtn').onclick=()=>{if
 $('#sleepBtn').onclick=()=>$('#sleepDialog').showModal();$$('[data-sleep]').forEach(button=>button.onclick=()=>{clearTimeout(state.sleepTimer);state.sleepTimer=null;const min=Number(button.dataset.sleep);if(min){state.sleepTimer=setTimeout(()=>{state.player?.pauseVideo();$('#sleepStatus').textContent='スリープ: 完了';toast('スリープタイマーで停止しました')},min*60000);$('#sleepStatus').textContent=`スリープ: ${min}分`;$('#sleepStatus').classList.add('active');toast(`${min}分後に停止します`)}else{$('#sleepStatus').textContent='スリープ: OFF';$('#sleepStatus').classList.remove('active');toast('スリープタイマーを解除しました')}});
 document.addEventListener('asmrtube:appearance-change',event=>{if(event.detail&&Object.prototype.hasOwnProperty.call(event.detail,'showThumbs'))renderSongList()});
 
-load();state.selectedId=filtered()[0]?.id||null;renderAll();setupPlaybackShortcuts();diag('app.ready',{items:state.library.length,selected:!!state.selectedId});
+load();state.selectedId=filtered()[0]?.id||null;renderAll();setupPlaybackShortcuts();setupDialogCloseButtons();diag('app.ready',{items:state.library.length,selected:!!state.selectedId});
