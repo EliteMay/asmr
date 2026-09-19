@@ -79,6 +79,10 @@ if(!app.includes('scheduleVolumeSave()')||!app.includes('flushVolumeSave()'))fai
 if(!app.includes('invalidateItem?.(editId)'))fail('changing a video URL must invalidate loaded player state');
 if(!app.includes("target?.closest?.('button,a,input,textarea,select"))fail('playback shortcuts must ignore focused interactive controls');
 if(!app.includes('function thumbnailsEnabled()')||!app.includes("showThumbs!==false"))fail('thumbnail suppression must avoid creating image requests, including first render');
+if(!app.includes('function setupDialogCloseButtons()')||!app.includes("[data-dialog-close]"))fail('dialog close controls must bypass form submission/validation');
+for(const [name,source] of [['index.html',html],['library-tools.js',libraryTools],['ui-enhancements.js',shell]]){
+  if(/<button\s+value=["']cancel["']\s+class=["'](?:icon-btn subtle|ghost-btn|primary-btn)["']/.test(source))fail(`${name} still has a close/cancel button that submits its dialog form`);
+}
 if(!html.includes('data-view="resume"')||!html.includes('id="countResume"')||!app.includes("state.currentView==='resume'"))fail('resume navigation/view is missing');
 if(!libraryTools.includes("document.documentElement.dataset.thumbs!=='0'")||!libraryTools.includes('showThumbs?`<img src='))fail('creator library must honor thumbnail suppression without creating image requests');
 if(!shell.includes('PRE_RESTORE_KEY')||!shell.includes('snapshotUndoRestoreBtn'))fail('pre-restore recovery UI is missing');
