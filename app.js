@@ -125,7 +125,7 @@ async function fetchYoutubeMetadata(url,{silent=false}={}){
     }catch(error){diag('metadata.fetch.failure',{provider:new URL(endpoint).hostname,name:error?.name||'Error'})}
   }
   if(seq!==metadataSeq)return false;
-  setMetadataStatus('自動取得できませんでした。タイトル・配信者は手入力できます。','error');
+  setMetadataStatus('自動取得できませんでした。タイトル・チャンネル名は手入力できます。','error');
   if(!silent)toast('動画情報を自動取得できませんでした');
   return false;
 }
@@ -201,7 +201,7 @@ function thumbnailsEnabled(){
 function songHtml(item){
   const showThumbs=thumbnailsEnabled();
   const image=showThumbs&&thumb(item.videoId)?`<img src="${thumb(item.videoId)}" alt="" width="116" height="72" loading="lazy" decoding="async">`:'';
-  return `<button class="song-item ${state.selectedId===item.id?'active':''}" data-id="${attr(item.id)}"><span class="thumb">${image}</span><span class="song-meta"><strong>${esc(item.title)}</strong><span>${esc(item.creator||'配信者未設定')}</span></span><span class="favorite-mark">${item.favorite?'★':''}</span></button>`;
+  return `<button class="song-item ${state.selectedId===item.id?'active':''}" data-id="${attr(item.id)}"><span class="thumb">${image}</span><span class="song-meta"><strong>${esc(item.title)}</strong><span>${esc(item.creator||'チャンネル未設定')}</span></span><span class="favorite-mark">${item.favorite?'★':''}</span></button>`;
 }
 function renderSongList(){
   const items=filtered();
@@ -256,10 +256,10 @@ function renderSelection(){
     document.dispatchEvent(new CustomEvent('asmrtube:selection-rendered',{detail:{item:null}}));
     return;
   }
-  $('#nowTitle').textContent=item.title;$('#nowCreator').textContent=item.creator||'配信者未設定';
+  $('#nowTitle').textContent=item.title;$('#nowCreator').textContent=item.creator||'チャンネル未設定';
   $('#topFavBtn').disabled=false;$('#topEditBtn').disabled=false;$('#timestampImportBtn').disabled=false;
   $('#topFavBtn').textContent=`${item.favorite?'★':'☆'} お気に入り`;
-  $('#infoCard').innerHTML=`<div class="info-title-row"><div class="info-title"><h3>${esc(item.title)}</h3><p>${esc(item.creator||'配信者未設定')}</p></div><span class="info-rating">${ratingLabel(item.rating)}</span></div><div class="tag-row">${(item.tags||[]).map(tag=>`<span class="tag">${esc(tag)}</span>`).join('')||'<span class="muted small">タグ未設定</span>'}</div><div class="info-actions"><button class="primary-soft" id="infoPlay">▶ 再生</button><button class="ghost-btn" id="infoImport">コメントからタイムスタンプ</button><button class="ghost-btn" id="infoPlaylist">プレイリストへ</button><button class="danger-btn" id="infoDelete">削除</button></div>`;
+  $('#infoCard').innerHTML=`<div class="info-title-row"><div class="info-title"><h3>${esc(item.title)}</h3><p>${esc(item.creator||'チャンネル未設定')}</p></div><span class="info-rating">${ratingLabel(item.rating)}</span></div><div class="tag-row">${(item.tags||[]).map(tag=>`<span class="tag">${esc(tag)}</span>`).join('')||'<span class="muted small">タグ未設定</span>'}</div><div class="info-actions"><button class="primary-soft" id="infoPlay">▶ 再生</button><button class="ghost-btn" id="infoImport">コメントからタイムスタンプ</button><button class="ghost-btn" id="infoPlaylist">プレイリストへ</button><button class="danger-btn" id="infoDelete">削除</button></div>`;
   $('#infoPlay').onclick=()=>playItem(item.id);
   $('#infoImport').onclick=openTimestampDialog;
   $('#infoPlaylist').onclick=()=>addToPlaylistPrompt(item.id);
