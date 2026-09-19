@@ -224,11 +224,76 @@ function renderSongList(){
 function currentViewLabel(){
   if(state.currentView==='favorites')return 'FAVORITES';
   if(state.currentView==='recent')return 'RECENTLY PLAYED';
+  if(state.currentView==='resume')return 'RESUME';
   if(state.currentView==='sleep')return 'SLEEP ASMR';
   if(state.currentView==='channel'){const group=channelGroups().find(value=>value.key===state.currentChannel);return group?`チャンネル · ${group.name}`:'チャンネル'}
   if(state.currentView==='playlist')return 'PLAYLIST';
   return 'ASMR LIBRARY';
 }
+function browseViewLabel(){
+  if(state.currentView==='favorites')return 'お気に入り';
+  if(state.currentView==='recent')return '最近聴いたASMR';
+  if(state.currentView==='resume')return '続きから';
+  if(state.currentView==='sleep')return '睡眠向けASMR';
+  if(state.currentView==='playlist'){const playlist=state.playlists.find(value=>value.id===state.currentPlaylist);return playlist?.name||'プレイリスト'}
+  if(state.currentView==='channel'){const group=channelGroups().find(value=>value.key===state.currentChannel);return group?.name||'チャンネル'}
+  return 'すべてのASMR';
+}
+function browseFiltered(){
+  let items=filtered({query:state.browseQuery});
+  if(state.browseChannel)items=items.filter(item=>channelKey(item.creator)===state.browseChannel);
+  return items;
+}
+function browseCardHtml(item){
+  const showThumbs=thumbnailsEnabled(),image=showThumbs&&thumb(item.videoId)?`<img src="${thumb(item.videoId)}" alt="" width="360" height="203" loading="lazy" decoding="async">`:'<span class="browse-cover-placeholder">ASMR</span>';
+  const tags=(item.tags||[]).slice(0,2).map(tag=>`<span class="browse-mini">${esc(tag)}</span>`).join('');
+  const flags=[item.favorite?'<span class="browse-mini favorite">★ お気に入り</span>':'',item.sleepFriendly||item.tags?.includes('睡眠')?'<span class="browse-mini">睡眠向け</span>':''].join('');
+  return `<article class="browse-card ${state.selectedId===item.id?'active':''}" data-browse-card="${attr(item.id)}"><button class="browse-card-main" type="button" data-browse-select="${attr(item.id)}"><span class="browse-cover">${image}${state.currentId===item.id?'<span class="browse-now">再生中</span>':''}</span><span class="browse-body"><strong class="browse-title">${esc(item.title||'無題')}</strong><span class="browse-channel">${esc(item.creator||'チャンネル未設定')}</span><span class="browse-status">${tags}${flags||(!tags?'<span class="browse-mini muted">未分類</span>':'')}</span></span></button><button class="browse-play" type="button" data-browse-play="${attr(item.id)}" title="再生" aria-label="${attr(item.title||'ASMR')}を再生">▶</button></article>`;
+}
+function renderBrowseChannels(){
+  const box=$('#browseChannelChips');if(!box)return;
+  const groups=channelGroups();
+  $('#browseChannelCount').textContent=`${groups.length}チャンネル`;
+  box.innerHTML=`<button type="button" class="browse-channel-chip ${state.browseChannel?'':'active'}" data-browse-channel="">すべてのチャンネル <span>${state.library.length}</span></button>`+groups.map(group=>`<button type="button" class="browse-channel-chip ${state.browseChannel===group.key?'active':''}" data-browse-channel="${attr(group.key)}">${esc(group.name)} <span>${group.count}</span></button>`).join('');
+  $('[data-browse-channel]',box).forEach(button=>button.onclick=()=>{
+    state.browseChannel=button.dataset.browseChannel||null;
+    if(state.currentView==='channel'){state.currentView='all';state.currentChannel=null;$('.view-btn[data-view]').forEach(node=>node.classList.toggle('active',node.dataset.view==='all'))}
+    renderBrowsePage();
+  });
+}
+function renderBrowsePage(){
+  const page=$('#browsePage');if(!page||page.hidden)return;
+  renderBrowseChannels();
+  const items=browseFiltered();
+  const channel=state.browseChannel?channelGroups().find(group=>group.key===state.browseChannel):null;
+  $('#browseHeading').textContent=channel?`${channel.name} · ${browseViewLabel()}`:browseViewLabel();
+  $('#browseCount').textContent=`${items.length}件`;
+  $('.browse-chip[data-browse-view]').forEach(button=>button.classList.toggle('active',button.dataset.browseView===state.currentView));
+  const grid=$('#browseGrid');
+  grid.innerHTML=items.length?items.map(browseCardHtml).join(''):`<div class="browse-empty"><strong>条件に合うASMRがありません</strong><span>チャンネル・検索・絞り込みを変えると他の作品を表示できます。</span></div>`;
+  $('[data-browse-select]',grid).forEach(button=>button.onclick=()=>selectItem(button.dataset.browseSelect));
+  $('[data-browse-play]',grid).forEach(button=>button.onclick=async event=>{event.stopPropagation();await playItem(button.dataset.browsePlay);renderBrowsePage()});
+}
+function hideBrowsePage(){
+  const page=$('#browsePage'),workspace=$('.workspace');
+  document.body.classList.remove('browse-mode');
+  if(page)page.hidden=true;if(workspace)workspace.hidden=false;
+  $('#browsePageBtn')?.classList.remove('active');$('#playerPageBtn')?.classList.add('active');
+}
+function showBrowsePage(){
+  try{window.asmrtubeProductShell?.hideDashboard?.()}catch{}
+  try{window.asmrtubeAppearance?.hideSettings?.()}catch{}
+  const page=$('#browsePage'),workspace=$('.workspace');if(!page||!workspace)return;
+  document.body.classList.remove('mobile-sidebar-open');
+  document.body.classList.add('browse-mode');page.hidden=false;workspace.hidden=true;
+  $('#playerPageBtn')?.classList.remove('active');$('#browsePageBtn')?.classList.add('active');
+  renderBrowsePage();window.scrollTo?.(0,0);diag('browse.open');
+}
+function showPlayerPage(){
+  try{window.asmrtubeProductShell?.hideDashboard?.()}catch{}
+  hideBrowsePage();renderSelection();window.scrollTo?.(0,0);diag('browse.close');
+}
+window.asmrtubeBrowse={show:showBrowsePage,hide:hideBrowsePage,showPlayer:showPlayerPage,render:renderBrowsePage};
 
 function showPlayerStatus(title,detail=''){
   const box=$('#playerPlaceholder');if(!box)return;
