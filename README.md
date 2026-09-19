@@ -19,8 +19,9 @@ Library rail
 
 ### Library rail
 
-- YouTube作品をタイトル・配信者・タグ・評価で整理
-- Search / View / Playlist / Libraryを分けて表示
+- YouTube作品をタイトル・チャンネル・タグ・評価で整理
+- 登録済みのチャンネル名から自動でチャンネル別ライブラリを生成
+- Search / View / Channel / Playlist / Libraryを分けて表示
 - 選択中作品はAccent line + Surface差で表示
 - 「サムネイル非表示」時は画像要素自体を生成せず、不要な画像通信を避ける
 
@@ -72,7 +73,7 @@ ThemeはBackground / Surface / Selected state / Player control / Range / Timesta
 - YouTubeコメント欄のタイムスタンプを人ごとの書き方の違いごと吸収する
 - 長いASMRから目的の場面へすぐ移動する
 - 気に入った区間や前回の再生位置を残す
-- 配信者単位でもライブラリを見返せるようにする
+- チャンネル単位でライブラリを絞り込み、同じチャンネルの作品をまとめて見返せるようにする
 - 誤削除・壊れたJSON・保存データ破損へ備える
 - GitHub Pagesで軽く、個人利用しやすい状態を維持する
 
@@ -163,6 +164,7 @@ GitHub Actions: `.github/workflows/quality-check.yml`
   - Canonical timestamp import
   - Dashboard exit topbar restore
   - Thumbnail-off image suppression
+  - チャンネル自動分類 / チャンネル絞り込み
   - Focused buttonのSpaceキー非横取り
 
 ## Visual Source of Truth
