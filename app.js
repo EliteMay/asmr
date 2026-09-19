@@ -255,7 +255,7 @@ function renderBrowseChannels(){
   const groups=channelGroups();
   $('#browseChannelCount').textContent=`${groups.length}チャンネル`;
   box.innerHTML=`<button type="button" class="browse-channel-chip ${state.browseChannel?'':'active'}" data-browse-channel="">すべてのチャンネル <span>${state.library.length}</span></button>`+groups.map(group=>`<button type="button" class="browse-channel-chip ${state.browseChannel===group.key?'active':''}" data-browse-channel="${attr(group.key)}">${esc(group.name)} <span>${group.count}</span></button>`).join('');
-  $('[data-browse-channel]',box).forEach(button=>button.onclick=()=>{
+  [...box.querySelectorAll('[data-browse-channel]')].forEach(button=>button.onclick=()=>{
     state.browseChannel=button.dataset.browseChannel||null;
     if(state.currentView==='channel'){state.currentView='all';state.currentChannel=null;$('.view-btn[data-view]').forEach(node=>node.classList.toggle('active',node.dataset.view==='all'))}
     renderBrowsePage();
@@ -271,8 +271,8 @@ function renderBrowsePage(){
   $('.browse-chip[data-browse-view]').forEach(button=>button.classList.toggle('active',button.dataset.browseView===state.currentView));
   const grid=$('#browseGrid');
   grid.innerHTML=items.length?items.map(browseCardHtml).join(''):`<div class="browse-empty"><strong>条件に合うASMRがありません</strong><span>チャンネル・検索・絞り込みを変えると他の作品を表示できます。</span></div>`;
-  $('[data-browse-select]',grid).forEach(button=>button.onclick=()=>selectItem(button.dataset.browseSelect));
-  $('[data-browse-play]',grid).forEach(button=>button.onclick=async event=>{event.stopPropagation();await playItem(button.dataset.browsePlay);renderBrowsePage()});
+  [...grid.querySelectorAll('[data-browse-select]')].forEach(button=>button.onclick=()=>selectItem(button.dataset.browseSelect));
+  [...grid.querySelectorAll('[data-browse-play]')].forEach(button=>button.onclick=async event=>{event.stopPropagation();await playItem(button.dataset.browsePlay);renderBrowsePage()});
 }
 function hideBrowsePage(){
   const page=$('#browsePage'),workspace=$('.workspace');
