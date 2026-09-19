@@ -9,6 +9,7 @@
   const $$=(s,r=document)=>[...r.querySelectorAll(s)];
   const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const diag=(type,detail={})=>{try{window.asmrtubeDiagnostics?.record(type,detail)}catch{}};
+  let mainPage='player',browseMode='all',browseQuery='',channelPageKey='',tagPageKey='';
 
   function brandSetup(){
     const brandMark=$('.brand-mark');
@@ -105,6 +106,123 @@
     const tools=$('.sidebar-tools');if(tools&&!$('#dataManageBtn')){const button=document.createElement('button');button.className='ghost-btn';button.id='dataManageBtn';button.textContent='データ管理';tools.appendChild(button);button.onclick=()=>{refreshDataDialog();$('#dataDialog')?.showModal();closeMobileSidebar()}}
   }
 
+  function pageSearchText(item){
+    return [item?.title,item?.creator,...(item?.tags||[])].filter(Boolean).join(' ').normalize('NFKC').toLowerCase();
+  }
+  function pageCardHtml(item){
+    const showThumbs=thumbnailsEnabled(),id=String(item?.videoId||''),valid=/^[A-Za-z0-9_-]{11}$/.test(id);
+    const image=showThumbs&&valid?`<img src="https://i.ytimg.com/vi/${safe(id)}/mqdefault.jpg" alt="" width="320" height="180" loading="lazy" decoding="async">`:'';
+    const tags=(item?.tags||[]).slice(0,3).map(tag=>`<span>${safe(tag)}</span>`).join('');
+    return `<button type="button" class="library-browser-card ${state.selectedId===item.id?'active':''}" data-browser-item="${safe(item.id)}"><span class="library-browser-thumb">${image}</span><span class="library-browser-copy"><strong>${safe(item.title||'無題')}</strong><span>${safe(item.creator||'チャンネル未設定')}</span>${tags?`<small>${tags}</small>`:''}</span></button>`;
+  }
+  function bindBrowserCards(root=document){
+    $('[data-browser-item]',root).forEach(button=>button.onclick=()=>{
+      selectItem(button.dataset.browserItem);
+      refreshMainPage();
+    });
+  }
+  function browseItems(){
+    let items=[...(state.library||[])];
+    if(browseMode==='favorites')items=items.filter(item=>item.favorite);
+    else if(browseMode==='recent')items=(state.recent||[]).map(id=>items.find(item=>item.id===id)).filter(Boolean);
+    else if(browseMode==='resume')items=items.filter(item=>Number(item.resumeAt||0)>8).sort((a,b)=>(b.resumeUpdatedAt||0)-(a.resumeUpdatedAt||0));
+    else if(browseMode==='sleep')items=items.filter(item=>item.sleepFriendly||item.tags?.includes('睡眠'));
+    const terms=String(browseQuery||'').normalize('NFKC').toLowerCase().trim().split(/\s+/).filter(Boolean);
+    if(terms.length)items=items.filter(item=>{const haystack=pageSearchText(item);return terms.every(term=>haystack.includes(term))});
+    if(browseMode!=='recent'&&browseMode!=='resume')items.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    return items;
+  }
+  function createMainPages(){
+    if($('#mainPageHost'))return;
+    const workspace=$('.workspace');if(!workspace)return;
+    const host=document.createElement('div');host.id='mainPageHost';host.className='main-page-host';
+    host.innerHTML=`
+      <section id="browsePage" class="main-page-panel library-browser-page" aria-labelledby="browsePageTitle">
+        <div class="library-page-hero"><div><div class="eyebrow">YOUR ASMR LIBRARY</div><h2 id="browsePageTitle">ASMRを探す</h2><p>サムネイルとチャンネルを見ながら、聴きたいASMRを大きく探せます。</p></div><button id="browseAddBtn" class="primary-btn" type="button">＋ ASMR追加</button></div>
+        <div class="library-browser-toolbar"><label class="library-browser-search"><span>⌕</span><input id="browseSearch" type="search" placeholder="タイトル・チャンネル・タグを検索"></label><div class="library-browser-chips"><button class="library-browser-chip active" data-browse-mode="all" type="button">すべて</button><button class="library-browser-chip" data-browse-mode="favorites" type="button">お気に入り</button><button class="library-browser-chip" data-browse-mode="recent" type="button">最近聴いた</button><button class="library-browser-chip" data-browse-mode="resume" type="button">続きから</button><button class="library-browser-chip" data-browse-mode="sleep" type="button">睡眠向け</button></div></div>
+        <div class="library-page-section-head"><div><span class="eyebrow">ASMR</span><h3 id="browseResultTitle">すべてのASMR</h3></div><span id="browseResultCount">0件</span></div>
+        <div id="browseGrid" class="library-browser-grid"></div>
+      </section>
+      <section id="channelsPage" class="main-page-panel library-browser-page" aria-labelledby="channelsPageTitle">
+        <div class="library-page-hero"><div><div class="eyebrow">CHANNELS</div><h2 id="channelsPageTitle">チャンネル</h2><p>登録済みASMRをチャンネルごとにまとめて選べます。</p></div></div>
+        <div id="channelPageNav" class="library-entity-grid" aria-label="チャンネル一覧"></div>
+        <div class="library-page-section-head"><div><span class="eyebrow">CHANNEL ASMR</span><h3 id="channelPageTitle">チャンネルを選択</h3></div><span id="channelPageCount">0件</span></div>
+        <div id="channelPageGrid" class="library-browser-grid"></div>
+      </section>
+      <section id="tagsPage" class="main-page-panel library-browser-page" aria-labelledby="tagsPageTitle">
+        <div class="library-page-hero"><div><div class="eyebrow">TAGS</div><h2 id="tagsPageTitle">タグ</h2><p>耳かき・囁き・睡眠など、聴きたい音や用途からASMRを探せます。</p></div></div>
+        <div id="tagPageNav" class="library-entity-grid" aria-label="タグ一覧"></div>
+        <div class="library-page-section-head"><div><span class="eyebrow">TAGGED ASMR</span><h3 id="tagPageTitle">タグを選択</h3></div><span id="tagPageCount">0件</span></div>
+        <div id="tagPageGrid" class="library-browser-grid"></div>
+      </section>`;
+    workspace.insertAdjacentElement('beforebegin',host);
+
+    $('#browseSearch')?.addEventListener('input',event=>{browseQuery=event.target.value;renderBrowsePage()});
+    $('[data-browse-mode]',host).forEach(button=>button.addEventListener('click',()=>{
+      browseMode=button.dataset.browseMode;
+      $('[data-browse-mode]',host).forEach(node=>node.classList.toggle('active',node===button));
+      renderBrowsePage();
+    }));
+    $('#browseAddBtn')?.addEventListener('click',()=>$('#topAddBtn')?.click());
+  }
+  function renderBrowsePage(){
+    const grid=$('#browseGrid');if(!grid)return;
+    const items=browseItems();
+    const labels={all:'すべてのASMR',favorites:'お気に入り',recent:'最近聴いた',resume:'続きから',sleep:'睡眠向け'};
+    $('#browseResultTitle').textContent=labels[browseMode]||'ASMR';
+    $('#browseResultCount').textContent=`${items.length}件`;
+    grid.innerHTML=items.length?items.map(pageCardHtml).join(''):'<div class="library-page-empty">条件に合うASMRがありません。</div>';
+    bindBrowserCards(grid);
+  }
+  function renderChannelsPage(){
+    const nav=$('#channelPageNav'),grid=$('#channelPageGrid');if(!nav||!grid)return;
+    const groups=typeof channelGroups==='function'?channelGroups():[];
+    if(!groups.some(group=>group.key===channelPageKey))channelPageKey=groups[0]?.key||'';
+    nav.innerHTML=groups.length?groups.map(group=>`<button type="button" class="library-entity-card ${group.key===channelPageKey?'active':''}" data-channel-page-key="${safe(group.key)}"><span class="library-entity-mark">${safe((group.name||'?').slice(0,1).toUpperCase())}</span><span><strong>${safe(group.name)}</strong><small>${group.count}件</small></span></button>`).join(''):'<div class="library-page-empty">チャンネル情報がまだありません。</div>';
+    const selected=groups.find(group=>group.key===channelPageKey);
+    const items=selected?(state.library||[]).filter(item=>typeof channelKey==='function'&&channelKey(item.creator)===selected.key).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)):[];
+    $('#channelPageTitle').textContent=selected?.name||'チャンネルを選択';
+    $('#channelPageCount').textContent=`${items.length}件`;
+    grid.innerHTML=items.length?items.map(pageCardHtml).join(''):'<div class="library-page-empty">このチャンネルにはASMRがありません。</div>';
+    $('[data-channel-page-key]',nav).forEach(button=>button.onclick=()=>{channelPageKey=button.dataset.channelPageKey;renderChannelsPage()});
+    bindBrowserCards(grid);
+  }
+  function renderTagsPage(){
+    const nav=$('#tagPageNav'),grid=$('#tagPageGrid');if(!nav||!grid)return;
+    const groups=typeof tagGroups==='function'?tagGroups():[];
+    if(!groups.some(group=>group.key===tagPageKey))tagPageKey=groups[0]?.key||'';
+    nav.innerHTML=groups.length?groups.map(group=>`<button type="button" class="library-entity-card tag-entity-card ${group.key===tagPageKey?'active':''}" data-tag-page-key="${safe(group.key)}"><span class="library-entity-mark">#</span><span><strong>${safe(group.name)}</strong><small>${group.count}件</small></span></button>`).join(''):'<div class="library-page-empty">タグがまだありません。</div>';
+    const selected=groups.find(group=>group.key===tagPageKey);
+    const items=selected?(state.library||[]).filter(item=>(item.tags||[]).some(tag=>String(tag).normalize('NFKC').toLowerCase()===selected.key)).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)):[];
+    $('#tagPageTitle').textContent=selected?.name||'タグを選択';
+    $('#tagPageCount').textContent=`${items.length}件`;
+    grid.innerHTML=items.length?items.map(pageCardHtml).join(''):'<div class="library-page-empty">このタグのASMRはありません。</div>';
+    $('[data-tag-page-key]',nav).forEach(button=>button.onclick=()=>{tagPageKey=button.dataset.tagPageKey;renderTagsPage()});
+    bindBrowserCards(grid);
+  }
+  function refreshMainPage(){
+    if(mainPage==='browse')renderBrowsePage();
+    else if(mainPage==='channels')renderChannelsPage();
+    else if(mainPage==='tags')renderTagsPage();
+  }
+  function setMainPage(page,{closeSidebar=true}={}){
+    if(!['player','browse','channels','tags'].includes(page))page='player';
+    if(document.body.classList.contains('dashboard-mode'))hideDashboard();
+    if(document.body.classList.contains('settings-mode'))window.asmrtubeAppearance?.hideSettings?.();
+    mainPage=page;document.body.dataset.mainPage=page;
+    $('.page-switch-btn').forEach(button=>button.classList.toggle('active',button.dataset.mainPage===page));
+    refreshMainPage();
+    if(page==='player')renderSelection();
+    if(closeSidebar)closeMobileSidebar();
+    diag('main-page.open',{page});
+  }
+  function setupMainPageTabs(){
+    createMainPages();
+    document.body.dataset.mainPage='player';
+    $('.page-switch-btn').forEach(button=>button.addEventListener('click',()=>setMainPage(button.dataset.mainPage)));
+    renderBrowsePage();renderChannelsPage();renderTagsPage();
+  }
+
   function createDashboard(){
     if($('#dashboardPage'))return;
     const nav=$('#nav');if(nav&&!$('#dashboardBtn')){const button=document.createElement('button');button.className='view-btn';button.id='dashboardBtn';button.innerHTML='<span>概要</span><span class="nav-count">⌂</span>';nav.prepend(button);button.onclick=showDashboard}
@@ -123,7 +241,7 @@
     page.innerHTML=`<div class="dashboard-hero"><div class="dashboard-hero-copy"><div class="eyebrow">LIBRARY OVERVIEW</div><h2>聴きたいASMRへ、すぐ辿り着く。</h2><p>ライブラリ全体・最近聴いた作品・よく使うタグを1画面で確認できます。</p></div><div class="dashboard-hero-actions"><button class="ghost-btn" data-dashboard-action="data">データ管理</button><button class="primary-btn" data-dashboard-action="add">＋ ASMR追加</button></div></div><div class="dashboard-stats"><article class="dashboard-stat"><span class="dashboard-stat-label">LIBRARY</span><strong class="dashboard-stat-value">${library.length}</strong><span class="dashboard-stat-note">登録ASMR</span></article><article class="dashboard-stat"><span class="dashboard-stat-label">FAVORITES</span><strong class="dashboard-stat-value">${fav}</strong><span class="dashboard-stat-note">お気に入り</span></article><article class="dashboard-stat"><span class="dashboard-stat-label">SLEEP</span><strong class="dashboard-stat-value">${sleep}</strong><span class="dashboard-stat-note">睡眠向け</span></article><article class="dashboard-stat"><span class="dashboard-stat-label">TIMESTAMPS</span><strong class="dashboard-stat-value">${timestamps}</strong><span class="dashboard-stat-note">登録タイムスタンプ</span></article></div><div class="dashboard-grid"><section class="dashboard-panel"><div class="dashboard-panel-head"><h3>${recentHeading}</h3><span>${recent.length}件</span></div>${recent.length?`<div class="dashboard-recent-grid">${recent.map(item=>`<button class="dashboard-recent" data-dashboard-item="${safe(item.id)}"><span class="dashboard-recent-thumb">${showThumbs?`<img src="https://i.ytimg.com/vi/${safe(item.videoId||'')}/mqdefault.jpg" alt="" width="240" height="150" loading="lazy" decoding="async">`:''}</span><span class="dashboard-recent-copy"><strong>${safe(item.title||'無題')}</strong><span>${safe(item.creator||'チャンネル未設定')}</span></span></button>`).join('')}</div>`:'<div class="dashboard-empty">ASMRを追加するとここに表示されます。</div>'}</section><aside class="dashboard-panel"><div class="dashboard-panel-head"><h3>よく使うタグ</h3><span>TOP ${tags.length}</span></div>${tags.length?`<div class="dashboard-tags">${tags.map(([name,count])=>`<span class="dashboard-tag">${safe(name)} <b>${count}</b></span>`).join('')}</div>`:'<div class="dashboard-empty">タグはまだありません。</div>'}<div class="dashboard-quick"><button class="ghost-btn" data-dashboard-view="favorites"><span>お気に入りを見る</span><span>${fav} →</span></button><button class="ghost-btn" data-dashboard-view="sleep"><span>睡眠向けを見る</span><span>${sleep} →</span></button><button class="ghost-btn" data-dashboard-view="recent"><span>最近聴いたを見る</span><span>${recentIds.length} →</span></button><button class="ghost-btn" data-dashboard-view="resume"><span>続きから見る</span><span>${resume.length} →</span></button></div></aside></div>`;
     $$('[data-dashboard-item]',page).forEach(button=>button.onclick=()=>{hideDashboard();selectItem(button.dataset.dashboardItem);closeMobileSidebar()});$$('[data-dashboard-view]',page).forEach(button=>button.onclick=()=>{hideDashboard();$(`.view-btn[data-view="${button.dataset.dashboardView}"]`)?.click()});$('[data-dashboard-action="add"]',page)?.addEventListener('click',()=>{hideDashboard();$('#topAddBtn')?.click()});$('[data-dashboard-action="data"]',page)?.addEventListener('click',()=>{refreshDataDialog();$('#dataDialog')?.showModal()});
   }
-  function showDashboard(){renderDashboard();document.body.classList.add('dashboard-mode');$$('.view-btn').forEach(button=>button.classList.toggle('active',button.id==='dashboardBtn'));$('#viewEyebrow').textContent='LIBRARY OVERVIEW';$('#nowTitle').textContent='ライブラリ概要';$('#nowCreator').textContent='登録状況と最近聴いたASMR';closeMobileSidebar();diag('dashboard.open')}
+  function showDashboard(){setMainPage('player',{closeSidebar:false});renderDashboard();document.body.classList.add('dashboard-mode');$$('.view-btn').forEach(button=>button.classList.toggle('active',button.id==='dashboardBtn'));$('#viewEyebrow').textContent='LIBRARY OVERVIEW';$('#nowTitle').textContent='ライブラリ概要';$('#nowCreator').textContent='登録状況と最近聴いたASMR';closeMobileSidebar();diag('dashboard.open')}
   function hideDashboard(){if(!document.body.classList.contains('dashboard-mode'))return;document.body.classList.remove('dashboard-mode');$('#dashboardBtn')?.classList.remove('active');renderSelection()}
 
   function initMobileNavigation(){
@@ -132,7 +250,7 @@
     const close=document.createElement('button');close.className='mobile-sidebar-close';close.type='button';close.textContent='×';close.setAttribute('aria-label','メニューを閉じる');brandRow?.appendChild(close);
     const backdrop=document.createElement('button');backdrop.className='mobile-sidebar-backdrop';backdrop.type='button';backdrop.setAttribute('aria-label','メニューを閉じる');document.body.appendChild(backdrop);
     menu.onclick=()=>{const open=document.body.classList.toggle('mobile-sidebar-open');menu.setAttribute('aria-expanded',String(open))};close.onclick=closeMobileSidebar;backdrop.onclick=closeMobileSidebar;
-    sidebar.addEventListener('click',event=>{if(matchMedia('(max-width:900px)').matches&&event.target.closest('.song-item,.view-btn,.playlist-item,.channel-item,.tag-sidebar-item'))setTimeout(closeMobileSidebar,30)});
+    sidebar.addEventListener('click',event=>{if(matchMedia('(max-width:900px)').matches&&event.target.closest('.song-item,.view-btn,.playlist-item,.channel-item,.tag-sidebar-item,.page-switch-btn'))setTimeout(closeMobileSidebar,30)});
   }
   function closeMobileSidebar(){document.body.classList.remove('mobile-sidebar-open');$('#mobileMenuBtn')?.setAttribute('aria-expanded','false')}
 
@@ -146,8 +264,8 @@
   function setupShortcuts(){window.addEventListener('keydown',event=>{if(event.key==='Escape'){closeMobileSidebar();return}if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){event.preventDefault();closeMobileSidebar();$('#searchInput')?.focus();$('#searchInput')?.select();return}if(!isInteractive(event.target)&&!$('dialog[open]')&&event.key==='?'){event.preventDefault();$('#helpDialog')?.showModal()}})}
   function shouldStartDashboard(){try{return !!JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}').startDashboard}catch{return false}}
 
-  brandSetup();createHelpDialog();createDataDialog();setupDataButton();createDashboard();initMobileNavigation();ensureParseInsights();setupShortcuts();
-  document.addEventListener('asmrtube:selection-rendered',updateNowArt);document.addEventListener('asmrtube:parser-result',()=>setTimeout(updateParseInsights,0));document.addEventListener('asmrtube:appearance-change',()=>{if(document.body.classList.contains('dashboard-mode'))renderDashboard()});
+  brandSetup();createHelpDialog();createDataDialog();setupDataButton();createDashboard();setupMainPageTabs();initMobileNavigation();ensureParseInsights();setupShortcuts();
+  document.addEventListener('asmrtube:selection-rendered',()=>{updateNowArt();refreshMainPage()});document.addEventListener('asmrtube:parser-result',()=>setTimeout(updateParseInsights,0));document.addEventListener('asmrtube:appearance-change',()=>{if(document.body.classList.contains('dashboard-mode'))renderDashboard();refreshMainPage()});
   if(shouldStartDashboard())setTimeout(showDashboard,80);
-  window.asmrtubeProductShell={showDashboard,hideDashboard,refreshDataDialog,createSnapshot};
+  window.asmrtubeProductShell={showDashboard,hideDashboard,refreshDataDialog,createSnapshot,setMainPage,getMainPage:()=>mainPage,refreshMainPage};
 })();
