@@ -180,7 +180,8 @@ function renderChannels(){
   box.innerHTML=groups.map(group=>`<button class="channel-item ${state.currentView==='channel'&&state.currentChannel===group.key?'active':''}" data-channel-key="${attr(group.key)}"><span>${esc(group.name)}</span><span class="channel-item-count">${group.count}</span></button>`).join('');
   [...box.children].forEach(button=>button.onclick=()=>{
     state.currentView='channel';state.currentChannel=button.dataset.channelKey;state.currentPlaylist=null;
-    $$('.view-btn').forEach(node=>node.classList.remove('active'));
+    $('.view-btn').forEach(node=>node.classList.remove('active'));
+    const items=filtered();if(!items.some(item=>item.id===state.selectedId))state.selectedId=items[0]?.id||null;
     renderAll();
   });
 }
