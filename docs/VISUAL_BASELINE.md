@@ -71,7 +71,9 @@ v3 Visual Source of TruthはLegacy CSSより後に読み込みます。
 
 ### 2. Library remains practical
 
-- Search / View / Playlist / Libraryの区別が一目で分かること。
+- Search / View / Channel / Tag / Playlist / Libraryの区別が一目で分かること。
+- チャンネルとタグは件数付きの選択可能な分類として左Railから直接絞り込めること。
+- 分類が増えてもASMR一覧が押し潰されないよう、Brand / Toolsを固定し、中央のLibrary navigationを単一スクロール領域として扱うこと。
 - サムネイルが視覚的な探索を助けること。
 - Active itemは色だけでなくSurface / Border / Accent lineでも区別すること。
 - Compact modeでもタイトルと配信者を識別できること。
