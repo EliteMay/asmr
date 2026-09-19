@@ -488,6 +488,55 @@ html[data-has-media-art="0"] .media-ambient{opacity:0}
 }
 .dialog::backdrop{background:rgba(0,0,0,.72)!important;backdrop-filter:blur(7px)!important}
 .dialog-head{border-bottom-color:var(--theme-line)!important}.dialog input,.dialog textarea,.dialog select{background:var(--theme-surface-2)!important;border-color:var(--theme-line)!important;color:var(--theme-text)!important}
+
+/* Timestamp import is a task workspace, not a long scrolling form.
+   Keep controls stable and give the parsed result the only expandable scroll area. */
+#timestampDialog{
+  width:min(900px,calc(100vw - 24px))!important;
+  height:min(760px,calc(100dvh - 24px))!important;
+  max-height:calc(100dvh - 24px)!important;
+  overflow:hidden!important;
+}
+#timestampForm{
+  height:100%!important;
+  min-height:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:hidden!important;
+  padding:18px!important;
+}
+#timestampForm .dialog-head{
+  flex:0 0 auto!important;
+  padding-bottom:12px!important;
+  margin-bottom:12px!important;
+}
+#timestampPaste{
+  flex:0 0 clamp(120px,24vh,190px)!important;
+  min-height:120px!important;
+  max-height:190px!important;
+  resize:none!important;
+  overflow:auto!important;
+}
+#timestampForm .parse-row{flex:0 0 auto!important;margin-top:12px!important}
+#timestampForm .parse-insights{flex:0 0 auto!important;margin-top:8px!important}
+#timestampPreview{
+  flex:1 1 auto!important;
+  min-height:170px!important;
+  max-height:none!important;
+  overflow:auto!important;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  margin-top:12px!important;
+  padding-right:3px;
+}
+#timestampForm .dialog-actions{
+  position:static!important;
+  flex:0 0 auto!important;
+  margin:12px -18px -18px!important;
+  padding:12px 18px 14px!important;
+  border-top:1px solid var(--theme-line)!important;
+  background:var(--theme-surface)!important;
+}
 .product-section,.settings-section{border-color:var(--theme-line)!important}
 .product-setting-row,.data-stat,.help-step,.settings-note,.snapshot-status,.quality-diagnostic-status{border-color:var(--theme-line)!important;background:var(--theme-surface-2)!important;color:var(--theme-text-2)!important}
 .toggle-track{background:var(--theme-surface-3)!important}.toggle input:checked + .toggle-track{background:rgb(var(--accent-rgb) / .24)!important}.toggle input:checked + .toggle-track:after{background:var(--accent-strong)!important}
@@ -530,6 +579,13 @@ html[data-has-media-art="0"] .media-ambient{opacity:0}
 }
 
 @media(max-width:560px){
+  #timestampDialog{width:calc(100vw - 12px)!important;height:calc(100dvh - 12px)!important;max-height:calc(100dvh - 12px)!important;border-radius:14px!important}
+  #timestampForm{padding:14px!important}
+  #timestampForm .dialog-head{padding-bottom:9px!important;margin-bottom:9px!important}
+  #timestampPaste{flex-basis:120px!important;min-height:105px!important;max-height:130px!important}
+  #timestampPreview{min-height:130px!important;margin-top:9px!important}
+  #timestampForm .parse-row{margin-top:9px!important}
+  #timestampForm .dialog-actions{margin:9px -14px -14px!important;padding:10px 14px calc(10px + env(safe-area-inset-bottom))!important}
   body{background:var(--theme-bg)!important}
   .topbar{min-height:70px!important;padding-right:9px!important}
   .now-playing-wrap{gap:9px!important}
