@@ -31,6 +31,11 @@
 
       <div class="search-box"><span>⌕</span><input id="searchInput" type="search" placeholder="タイトル・チャンネル・音を検索"></div>
 
+      <div class="sidebar-page-switch" aria-label="メイン画面">
+        <button class="sidebar-page-btn active" id="playerPageBtn" type="button"><span>▶</span><span>再生</span></button>
+        <button class="sidebar-page-btn" id="browsePageBtn" type="button"><span>▦</span><span>ASMRを探す</span></button>
+      </div>
+
       <nav class="view-nav" id="nav" aria-label="ライブラリ表示">
         <button class="view-btn active" data-view="all"><span>すべて</span><span class="nav-count" id="countAll">0</span></button>
         <button class="view-btn" data-view="favorites"><span>お気に入り</span><span class="nav-count" id="countFav">0</span></button>
@@ -79,6 +84,42 @@
         <div><span class="filter-label">耳</span><div id="earFilters" class="chips"></div></div>
         <div><span class="filter-label">種類</span><div id="typeFilters" class="chips"></div></div>
         <button class="ghost-btn" id="clearFiltersBtn">クリア</button>
+      </section>
+
+      <section id="browsePage" class="library-browse-page" hidden aria-labelledby="browsePageTitle">
+        <div class="browse-hero">
+          <div>
+            <div class="eyebrow">YOUR ASMR LIBRARY</div>
+            <h2 id="browsePageTitle">ASMRを探す</h2>
+            <p>サムネイル・チャンネル・聴き方から、今聴きたいASMRを選べます。再生してもこの画面に残れます。</p>
+          </div>
+          <button class="primary-btn" id="browseAddBtn" type="button">＋ ASMR追加</button>
+        </div>
+
+        <div class="browse-toolbar">
+          <label class="browse-search"><span>⌕</span><input id="browseSearch" type="search" placeholder="タイトル・チャンネル・音を検索"></label>
+          <div class="browse-view-chips" role="group" aria-label="ASMRの絞り込み">
+            <button class="browse-chip active" data-browse-view="all" type="button">すべて</button>
+            <button class="browse-chip" data-browse-view="favorites" type="button">お気に入り</button>
+            <button class="browse-chip" data-browse-view="recent" type="button">最近聴いた</button>
+            <button class="browse-chip" data-browse-view="resume" type="button">続きから</button>
+            <button class="browse-chip" data-browse-view="sleep" type="button">睡眠向け</button>
+          </div>
+        </div>
+
+        <section class="browse-channel-section" aria-labelledby="browseChannelTitle">
+          <div class="browse-section-head">
+            <div><div class="eyebrow">CHANNELS</div><h3 id="browseChannelTitle">チャンネルから選ぶ</h3></div>
+            <span id="browseChannelCount" class="browse-count">0チャンネル</span>
+          </div>
+          <div id="browseChannelChips" class="browse-channel-chips"></div>
+        </section>
+
+        <div class="browse-section-head browse-results-head">
+          <div><div class="eyebrow">ASMR</div><h3 id="browseHeading">すべてのASMR</h3></div>
+          <span id="browseCount" class="browse-count">0件</span>
+        </div>
+        <div id="browseGrid" class="browse-grid"></div>
       </section>
 
       <div class="workspace">
