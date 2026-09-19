@@ -27,6 +27,15 @@
     assert(d.querySelector('.song-item .song-meta strong')?.textContent==='Other ASMR','channel filter showed the wrong item');
     assert(d.querySelector('#nowTitle')?.textContent==='Other ASMR','channel selection did not keep the selected item in view');
     d.querySelector('.view-btn[data-view="all"]').click();
+    assert(d.querySelector('#tagSidebarCount')?.textContent==='2','tag group count did not render');
+    assert(d.querySelectorAll('#tagSidebarList .tag-sidebar-item').length===2,'tag sidebar did not group library tags');
+    const whisperTag=[...d.querySelectorAll('#tagSidebarList .tag-sidebar-item')].find(button=>button.textContent.includes('囁き'));
+    assert(whisperTag,'whisper tag group is missing');
+    whisperTag.click();
+    assert(d.querySelectorAll('.song-item').length===1,'tag sidebar filter did not narrow the library');
+    assert(d.querySelector('.song-item .song-meta strong')?.textContent==='Other ASMR','tag sidebar filter showed the wrong item');
+    assert(d.querySelector('#nowTitle')?.textContent==='Other ASMR','tag selection did not keep the selected item in view');
+    d.querySelector('.view-btn[data-view="all"]').click();
     d.querySelectorAll('.song-item')[0]?.click();
 
     d.querySelector('#newPlaylistBtn').click();
