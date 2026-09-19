@@ -84,6 +84,8 @@ for(const [name,source] of [['index.html',html],['library-tools.js',libraryTools
   if(/<button\s+value=["']cancel["']\s+class=["'](?:icon-btn subtle|ghost-btn|primary-btn)["']/.test(source))fail(`${name} still has a close/cancel button that submits its dialog form`);
 }
 if(!html.includes('data-view="resume"')||!html.includes('id="countResume"')||!app.includes("state.currentView==='resume'"))fail('resume navigation/view is missing');
+if(!html.includes('id="channelList"')||!html.includes('id="channelCount"')||!app.includes('function renderChannels()')||!app.includes("state.currentView==='channel'"))fail('channel grouping/navigation is missing');
+if(!shell.includes('.channel-item')||!appearance.includes('.channel-item'))fail('channel navigation must participate in dashboard/mobile/settings exits');
 if(!libraryTools.includes("document.documentElement.dataset.thumbs!=='0'")||!libraryTools.includes('showThumbs?`<img src='))fail('creator library must honor thumbnail suppression without creating image requests');
 if(!shell.includes('PRE_RESTORE_KEY')||!shell.includes('snapshotUndoRestoreBtn'))fail('pre-restore recovery UI is missing');
 if(!shell.includes('renderSelection()'))fail('dashboard exit must restore canonical topbar selection');

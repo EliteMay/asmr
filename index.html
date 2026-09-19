@@ -29,7 +29,7 @@
         <button class="icon-btn subtle" id="addVideoBtn" title="ASMRを追加" aria-label="ASMRを追加">＋</button>
       </div>
 
-      <div class="search-box"><span>⌕</span><input id="searchInput" type="search" placeholder="タイトル・配信者・音を検索"></div>
+      <div class="search-box"><span>⌕</span><input id="searchInput" type="search" placeholder="タイトル・チャンネル・音を検索"></div>
 
       <nav class="view-nav" id="nav" aria-label="ライブラリ表示">
         <button class="view-btn active" data-view="all"><span>すべて</span><span class="nav-count" id="countAll">0</span></button>
@@ -38,6 +38,9 @@
         <button class="view-btn" data-view="resume"><span>続きから</span><span class="nav-count" id="countResume">0</span></button>
         <button class="view-btn" data-view="sleep"><span>睡眠向け</span><span class="nav-count" id="countSleep">0</span></button>
       </nav>
+
+      <div class="channel-head"><span>チャンネル</span><span class="nav-count" id="channelCount">0</span></div>
+      <div id="channelList" class="channel-nav" aria-label="チャンネル別ライブラリ"></div>
 
       <div class="playlist-head"><span>プレイリスト</span><button class="mini-icon" id="newPlaylistBtn" title="プレイリスト作成">＋</button></div>
       <div id="playlistList" class="playlist-nav"></div>
@@ -194,7 +197,7 @@
         <div class="metadata-url-row"><input id="videoUrl" required placeholder="https://www.youtube.com/watch?v=..."><button type="button" class="ghost-btn" id="metadataRefreshBtn">情報取得</button></div>
         <span id="metadataStatus" class="field-hint">URLを貼るとタイトルとチャンネル名を自動取得します。</span>
       </label>
-      <div class="two-col"><label>タイトル<input id="videoTitle" placeholder="URLから自動取得"></label><label>配信者<input id="creator" placeholder="URLから自動取得"></label></div>
+      <div class="two-col"><label>タイトル<input id="videoTitle" placeholder="URLから自動取得"></label><label>チャンネル<input id="creator" placeholder="URLから自動取得"></label></div>
       <label>タグ<input id="tags" placeholder="耳かき, 囁き, 睡眠, 両耳"></label>
       <div class="two-col"><label>評価<select id="rating"><option value="0">未評価</option><option value="1">普通</option><option value="2">好き</option><option value="3">かなり好き</option><option value="4">神</option></select></label><label>作品音量<input id="itemVolume" type="number" min="0" max="100" value="35"></label></div>
       <label class="check-row"><input id="sleepFriendly" type="checkbox">睡眠向けとして登録</label>
