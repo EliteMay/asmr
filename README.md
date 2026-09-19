@@ -69,7 +69,7 @@ ThemeはBackground / Surface / Selected state / Player control / Range / Timesta
 
 ## 目的
 
-- ASMRをタイトル・配信者・タグ・評価で整理する
+- ASMRをタイトル・チャンネル・タグ・評価で整理する
 - YouTubeコメント欄のタイムスタンプを人ごとの書き方の違いごと吸収する
 - 長いASMRから目的の場面へすぐ移動する
 - 気に入った区間や前回の再生位置を残す
@@ -90,7 +90,7 @@ ThemeはBackground / Surface / Selected state / Player control / Range / Timesta
 - LyricTube保存データへ干渉しない
 - 旧 `{time,label,group,tags}` タイムスタンプを読める
 - v1.9以降の汎用タイムスタンプ解析
-- 続きから再生 / お気に入り区間 / 配信者 / タイムスタンプ編集
+- 続きから再生 / お気に入り区間 / チャンネル / タイムスタンプ編集
 
 ## 保存データ
 
