@@ -42,13 +42,13 @@
     if($('#helpDialog'))return;
     const dialog=document.createElement('dialog');dialog.id='helpDialog';dialog.className='dialog product-dialog-wide';
     dialog.innerHTML=`<form method="dialog">
-      <div class="dialog-head"><div><div class="eyebrow">HELP / GUIDE</div><h3>ASMRTubeの使い方</h3></div><button value="cancel" class="icon-btn subtle">×</button></div>
+      <div class="dialog-head"><div><div class="eyebrow">HELP / GUIDE</div><h3>ASMRTubeの使い方</h3></div><button type="button" data-dialog-close class="icon-btn subtle">×</button></div>
       <div class="product-dialog-body">
         <section class="product-section"><div class="product-section-title"><div><strong>基本の流れ</strong><span>登録からタイムスタンプ利用まで。</span></div></div><div class="help-steps"><div class="help-step">ASMR追加からYouTube URLを貼り付ける。タイトルとチャンネル名は自動取得できます。</div><div class="help-step">YouTubeコメント欄のタイムスタンプをそのままコピーして「コメントから取込」へ貼る。</div><div class="help-step">解析結果を確認し、必要なら見出し・時間・内容を修正して保存。</div><div class="help-step">右パネルの「見出し / すべて」を使い分け、目的の音へ直接ジャンプ。</div></div></section>
         <section class="product-section"><div class="product-section-title"><div><strong>対応タイムスタンプ例</strong><span>人によって違う書き方を汎用パーサーで吸収します。</span></div></div><div class="help-code">0:00 開始\n[12:35](YouTube URL) 耳かき\n25:54 - 梵天(右耳)\n耳ふー  4:46 右  5:38 左\n▷ 38:10 スライム  └ 41:20 握力52kg\n1:40 柔らかいタオル Soft Towel</div></section>
         <section class="product-section"><div class="product-section-title"><div><strong>ショートカット</strong><span>入力欄やボタンを操作中は再生ショートカットが割り込みません。</span></div></div><div class="product-shortcut-grid" data-library-tools="1"><div class="shortcut-row"><span>検索へ移動</span><kbd>Ctrl K</kbd></div><div class="shortcut-row"><span>ヘルプを開く</span><kbd>?</kbd></div><div class="shortcut-row"><span>再生 / 一時停止</span><kbd>Space / K</kbd></div><div class="shortcut-row"><span>10秒戻る / 進む</span><kbd>J / L</kbd></div><div class="shortcut-row"><span>サイドバーを閉じる</span><kbd>Esc</kbd></div></div></section>
         <section class="product-section"><div class="product-section-title"><div><strong>データ保護</strong><span>ブラウザのサイトデータを消すとローカル保存も消えます。</span></div></div><div class="settings-note">重要なライブラリは定期的に「データ管理 → JSONを書き出す」でバックアップしてください。読み込み・削除・復元前にはローカルスナップショットも利用します。</div></section>
-      </div><div class="dialog-actions"><button value="cancel" class="primary-btn">閉じる</button></div>
+      </div><div class="dialog-actions"><button type="button" data-dialog-close class="primary-btn">閉じる</button></div>
     </form>`;
     document.body.appendChild(dialog);
   }
@@ -87,12 +87,12 @@
   function createDataDialog(){
     if($('#dataDialog'))return;
     const dialog=document.createElement('dialog');dialog.id='dataDialog';dialog.className='dialog product-dialog';
-    dialog.innerHTML=`<form method="dialog"><div class="dialog-head"><div><div class="eyebrow">DATA MANAGEMENT</div><h3>データ管理</h3></div><button value="cancel" class="icon-btn subtle">×</button></div><div class="product-dialog-body">
+    dialog.innerHTML=`<form method="dialog"><div class="dialog-head"><div><div class="eyebrow">DATA MANAGEMENT</div><h3>データ管理</h3></div><button type="button" data-dialog-close class="icon-btn subtle">×</button></div><div class="product-dialog-body">
       <section class="product-section"><div class="product-section-title"><div><strong>現在のデータ</strong><span>このブラウザに保存されているASMRTubeデータの概要です。</span></div></div><div class="data-stats"><div class="data-stat"><span>ASMR</span><strong id="dataItemCount">0</strong></div><div class="data-stat"><span>TIMESTAMPS</span><strong id="dataTimestampCount">0</strong></div><div class="data-stat"><span>PLAYLISTS</span><strong id="dataPlaylistCount">0</strong></div><div class="data-stat"><span>STORAGE</span><strong id="dataStorageSize">0 KB</strong></div></div></section>
       <section class="product-section"><div class="product-section-title"><div><strong>JSONバックアップ</strong><span>別PC・別ブラウザへの移行にも使えます。読み込み前に内容を検証します。</span></div></div><div class="data-actions-grid"><button type="button" class="primary-soft" id="dataExportBtn">JSONを書き出す</button><button type="button" class="ghost-btn" id="dataImportBtn">JSONを読み込む</button></div></section>
       <section class="product-section"><div class="product-section-title"><div><strong>ローカルスナップショット</strong><span>誤削除や読み込みミス対策。ブラウザ内だけの簡易退避です。</span></div></div><div class="snapshot-status" id="snapshotStatus"></div><div class="data-actions-grid"><button type="button" class="ghost-btn" id="snapshotSaveBtn">今の状態を退避</button><button type="button" class="ghost-btn" id="snapshotRestoreBtn">退避状態へ戻す</button></div><div class="snapshot-status" id="snapshotUndoRestoreStatus"></div><button type="button" class="ghost-btn" id="snapshotUndoRestoreBtn" hidden>復元前の状態へ戻す</button><div class="settings-note">サイトデータ自体を削除するとスナップショットも消えるため、重要なバックアップはJSON書き出しを使ってください。</div></section>
       <section class="product-section"><div class="product-section-title"><div><strong>Runtime Diagnostics</strong><span>直近のエラー・保存失敗・初期化状態を端末内だけに最大120件保持します。入力本文やTokenは記録しません。</span></div></div><div class="quality-diagnostic-status" id="runtimeDiagnosticsStatus">診断情報を確認中…</div><div class="data-actions-grid"><button type="button" class="ghost-btn" id="diagnosticsExportBtn">診断JSONを書き出す</button><button type="button" class="ghost-btn" id="diagnosticsClearBtn">診断を消去</button></div></section>
-    </div><div class="dialog-actions"><button value="cancel" class="primary-btn">完了</button></div></form>`;
+    </div><div class="dialog-actions"><button type="button" data-dialog-close class="primary-btn">完了</button></div></form>`;
     document.body.appendChild(dialog);
     $('#dataExportBtn').onclick=()=>$('#exportBtn')?.click();$('#dataImportBtn').onclick=()=>$('#importInput')?.click();
     $('#snapshotSaveBtn').onclick=()=>{if(createSnapshot('manual')){refreshDataDialog();toast('現在の状態を退避しました')}else toast('スナップショットを保存できませんでした')};
