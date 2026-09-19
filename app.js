@@ -179,8 +179,8 @@ function renderChannels(){
   $('#channelCount').textContent=groups.length;
   box.innerHTML=groups.map(group=>`<button class="channel-item ${state.currentView==='channel'&&state.currentChannel===group.key?'active':''}" data-channel-key="${attr(group.key)}"><span>${esc(group.name)}</span><span class="channel-item-count">${group.count}</span></button>`).join('');
   [...box.children].forEach(button=>button.onclick=()=>{
-    state.currentView='channel';state.currentChannel=button.dataset.channelKey;state.currentPlaylist=null;
-    $$('.view-btn').forEach(node=>node.classList.remove('active'));
+    state.currentView='channel';state.currentChannel=button.dataset.channelKey;state.currentPlaylist=null;state.browseChannel=null;
+    $('.view-btn').forEach(node=>node.classList.remove('active'));
     const items=filtered();if(!items.some(item=>item.id===state.selectedId))state.selectedId=items[0]?.id||null;
     renderAll();
   });
@@ -189,8 +189,8 @@ function renderPlaylists(){
   const box=$('#playlistList');
   box.innerHTML=state.playlists.map(p=>`<button class="playlist-item ${state.currentView==='playlist'&&state.currentPlaylist===p.id?'active':''}" data-id="${attr(p.id)}">${esc(p.name)} (${p.items.length})</button>`).join('');
   [...box.children].forEach(button=>button.onclick=()=>{
-    state.currentView='playlist';state.currentPlaylist=button.dataset.id;state.currentChannel=null;
-    $$('.view-btn').forEach(node=>node.classList.remove('active'));
+    state.currentView='playlist';state.currentPlaylist=button.dataset.id;state.currentChannel=null;state.browseChannel=null;
+    $('.view-btn').forEach(node=>node.classList.remove('active'));
     renderAll();
   });
 }
@@ -425,7 +425,7 @@ function saveParsedTimestamps(){
   $('#timestampDialog').close();renderTimestamps();renderFilters();toast('タイムスタンプを追加しました');
 }
 
-function markRecent(id){state.recent=[id,...state.recent.filter(value=>value!==id)].slice(0,50);const ok=save({silent:true,reason:'recent'});if(ok)renderCounts();return ok}
+function markRecent(id){state.recent=[id,...state.recent.filter(value=>value!==id)].slice(0,50);const ok=save({silent:true,reason:'recent'});if(ok){renderCounts();renderBrowsePage()}return ok}
 async function playItem(id,start=0){
   const item=itemById(id);if(!item)return false;
   state.selectedId=id;$('#volume').value=item.volume??35;renderSongList();renderSelection();
@@ -501,12 +501,15 @@ function setupDialogCloseButtons(){
 function scheduleVolumeSave(){clearTimeout(volumeSaveTimer);volumeSaveTimer=setTimeout(()=>save({silent:true,reason:'volume'}),350)}
 function flushVolumeSave(){clearTimeout(volumeSaveTimer);volumeSaveTimer=null;save({silent:true,reason:'volume'})}
 
-$('#addVideoBtn').onclick=()=>openVideoDialog();$('#topAddBtn').onclick=()=>openVideoDialog();$('#emptyAddBtn').onclick=()=>openVideoDialog();$('#videoForm').onsubmit=saveVideo;
+$('#addVideoBtn').onclick=()=>openVideoDialog();$('#topAddBtn').onclick=()=>openVideoDialog();$('#emptyAddBtn').onclick=()=>openVideoDialog();$('#browseAddBtn').onclick=()=>openVideoDialog();$('#videoForm').onsubmit=saveVideo;
+$('#playerPageBtn').onclick=showPlayerPage;$('#browsePageBtn').onclick=showBrowsePage;
+$('#browseSearch').oninput=event=>{state.browseQuery=event.target.value.trim();renderBrowsePage()};
+$('.browse-chip[data-browse-view]').forEach(button=>button.onclick=()=>{state.currentView=button.dataset.browseView;state.currentPlaylist=null;state.currentChannel=null;$('.view-btn[data-view]').forEach(node=>node.classList.toggle('active',node.dataset.view===state.currentView));renderAll()});
 $('#videoUrl').addEventListener('input',queueMetadataFetch);$('#videoUrl').addEventListener('paste',()=>setTimeout(queueMetadataFetch,0));$('#metadataRefreshBtn').onclick=()=>fetchYoutubeMetadata($('#videoUrl').value.trim());
 $('#topFavBtn').onclick=toggleFavorite;$('#topEditBtn').onclick=()=>{const item=itemById(state.selectedId);if(item)openVideoDialog(item)};
 $('#filterBtn').onclick=()=>$('#filters').classList.toggle('hidden');$('#clearFiltersBtn').onclick=()=>{state.filters.clear();renderFilters();renderSongList()};
-$('#searchInput').oninput=event=>{state.query=event.target.value.trim();renderSongList()};$('#sortSelect').onchange=()=>{renderSongList();if(!itemById(state.selectedId)){state.selectedId=filtered()[0]?.id||null;renderSelection()}};
-$$('.view-btn[data-view]').forEach(button=>button.onclick=()=>{state.currentView=button.dataset.view;state.currentPlaylist=null;state.currentChannel=null;$$('.view-btn').forEach(node=>node.classList.toggle('active',node===button));renderAll()});
+$('#searchInput').oninput=event=>{state.query=event.target.value.trim();renderSongList()};$('#sortSelect').onchange=()=>{renderSongList();renderBrowsePage();if(!itemById(state.selectedId)){state.selectedId=filtered()[0]?.id||null;renderSelection()}};
+$('.view-btn[data-view]').forEach(button=>button.onclick=()=>{state.currentView=button.dataset.view;state.currentPlaylist=null;state.currentChannel=null;state.browseChannel=null;$('.view-btn').forEach(node=>node.classList.toggle('active',node===button));renderAll()});
 $('#timestampImportBtn').onclick=openTimestampDialog;$('#parseTimestampsBtn').onclick=()=>{state.parsedTimestamps=parseTimestampText($('#timestampPaste').value);showTimestampPreview();document.dispatchEvent(new CustomEvent('asmrtube:parser-result',{detail:{rows:state.parsedTimestamps}}));diag('timestamp.parse',{count:state.parsedTimestamps.length})};$('#saveTimestampsBtn').onclick=saveParsedTimestamps;
 $('#newPlaylistBtn').onclick=()=>{$('#playlistName').value='';$('#playlistDialog').showModal()};$('#playlistForm').onsubmit=event=>{event.preventDefault();const name=$('#playlistName').value.trim();if(!name)return;state.playlists.push({id:uid(),name:name.slice(0,80),items:[]});if(save({reason:'playlist-create'})){$('#playlistDialog').close();renderPlaylists();toast('プレイリストを作成しました')}};
 $('#exportBtn').onclick=exportJson;$('#importInput').onchange=event=>{if(event.target.files[0])importJson(event.target.files[0]);event.target.value=''};
@@ -516,6 +519,6 @@ $('#volume').oninput=event=>{const value=Number(event.target.value);window.asmrt
 $('#seek').oninput=event=>{if(state.duration)state.player?.seekTo(Number(event.target.value)/1000*state.duration,true)};
 $('#loopBtn').setAttribute('aria-pressed','false');$('#loopBtn').onclick=()=>{if(!state.player||!state.selectedId)return;const time=state.player.getCurrentTime()||0;if(state.loopA==null){state.loopA=time;state.loopB=null;$('#loopBtn').textContent=`A ${fmt(time)}`;$('#loopStatus').textContent=`A: ${fmt(time)} / B: 未設定`;$('#loopStatus').classList.add('active');toast('A地点を設定しました')}else if(state.loopB==null){if(time<=state.loopA)return toast('B地点はAより後にしてください');state.loopB=time;$('#loopBtn').textContent='A-B ON';$('#loopBtn').classList.add('active');$('#loopBtn').setAttribute('aria-pressed','true');$('#loopStatus').textContent=`${fmt(state.loopA)} 〜 ${fmt(state.loopB)}`;toast('区間リピートを開始します')}else{resetLoop();toast('区間リピートを解除しました')}};
 $('#sleepBtn').onclick=()=>$('#sleepDialog').showModal();$$('[data-sleep]').forEach(button=>button.onclick=()=>{clearTimeout(state.sleepTimer);state.sleepTimer=null;const min=Number(button.dataset.sleep);if(min){state.sleepTimer=setTimeout(()=>{state.player?.pauseVideo();$('#sleepStatus').textContent='スリープ: 完了';toast('スリープタイマーで停止しました')},min*60000);$('#sleepStatus').textContent=`スリープ: ${min}分`;$('#sleepStatus').classList.add('active');toast(`${min}分後に停止します`)}else{$('#sleepStatus').textContent='スリープ: OFF';$('#sleepStatus').classList.remove('active');toast('スリープタイマーを解除しました')}});
-document.addEventListener('asmrtube:appearance-change',event=>{if(event.detail&&Object.prototype.hasOwnProperty.call(event.detail,'showThumbs'))renderSongList()});
+document.addEventListener('asmrtube:appearance-change',event=>{if(event.detail&&Object.prototype.hasOwnProperty.call(event.detail,'showThumbs')){renderSongList();renderBrowsePage()}});
 
 load();state.selectedId=filtered()[0]?.id||null;renderAll();setupPlaybackShortcuts();setupDialogCloseButtons();diag('app.ready',{items:state.library.length,selected:!!state.selectedId});
