@@ -277,7 +277,7 @@ async function saveVideo(event){
   const editId=$('#editId').value,duplicate=state.library.find(item=>item.videoId===videoId&&item.id!==editId);if(duplicate)return toast(`「${duplicate.title}」として登録済みです`);
   if(!$('#videoTitle').value.trim()||!$('#creator').value.trim())await fetchYoutubeMetadata(url,{silent:true});
   const title=$('#videoTitle').value.trim();if(!title)return toast('タイトルを取得できませんでした。タイトルを入力してください');
-  const volumeInput=Number($('#itemVolume').value);
+  const volumeRaw=$('#itemVolume').value.trim(),volumeInput=volumeRaw===''?35:Number(volumeRaw);
   const data={url:canonicalYoutubeUrl(videoId),videoId,title:title.slice(0,300),creator:$('#creator').value.trim().slice(0,220),tags:tagList($('#tags').value),rating:Number($('#rating').value),volume:Number.isFinite(volumeInput)?Math.min(100,Math.max(0,volumeInput)):35,sleepFriendly:$('#sleepFriendly').checked};
   let changedVideo=false;
   if(editId){
@@ -453,7 +453,7 @@ $('#filterBtn').onclick=()=>$('#filters').classList.toggle('hidden');$('#clearFi
 $('#searchInput').oninput=event=>{state.query=event.target.value.trim();renderSongList()};$('#sortSelect').onchange=()=>{renderSongList();if(!itemById(state.selectedId)){state.selectedId=filtered()[0]?.id||null;renderSelection()}};
 $$('.view-btn[data-view]').forEach(button=>button.onclick=()=>{state.currentView=button.dataset.view;state.currentPlaylist=null;$$('.view-btn').forEach(node=>node.classList.toggle('active',node===button));renderAll()});
 $('#timestampImportBtn').onclick=openTimestampDialog;$('#parseTimestampsBtn').onclick=()=>{state.parsedTimestamps=parseTimestampText($('#timestampPaste').value);showTimestampPreview();document.dispatchEvent(new CustomEvent('asmrtube:parser-result',{detail:{rows:state.parsedTimestamps}}));diag('timestamp.parse',{count:state.parsedTimestamps.length})};$('#saveTimestampsBtn').onclick=saveParsedTimestamps;
-$('#newPlaylistBtn').onclick=()=>openPlaylistDialog(null);$('#playlistForm').onsubmit=event=>{event.preventDefault();createPlaylistFromDialog()};$('#playlistDialog').addEventListener('close',()=>{playlistTargetId=null});
+$('#newPlaylistBtn').onclick=()=>openPlaylistDialog(null);$('#playlistForm').onsubmit=event=>{event.preventDefault();createPlaylistFromDialog()};$('[data-playlist-close]').forEach(button=>button.onclick=()=>$('#playlistDialog').close());$('#playlistDialog').addEventListener('close',()=>{playlistTargetId=null});
 $('#exportBtn').onclick=exportJson;$('#importInput').onchange=event=>{if(event.target.files[0])importJson(event.target.files[0]);event.target.value=''};
 $('#playBtn').onclick=()=>{const item=itemById(state.selectedId);if(!item)return;window.asmrtubeYoutubeRuntime?.toggleSelected?.(item)};
 $('#prevBtn').onclick=()=>step(-1);$('#nextBtn').onclick=()=>step(1);
