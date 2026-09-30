@@ -75,6 +75,10 @@ if(!app.includes('ASMRTubeCore.prepareImportedData'))fail('JSON import is not ro
 if(!app.includes('if(file.size>5*1024*1024)'))fail('JSON import file-size guard is missing');
 
 if(!app.includes("asmrtube:save-failed")||!app.includes('restoreDurableState()'))fail('save failure rollback/feedback is missing');
+if(!app.includes("asmrtube.library.recovery.v1")||!app.includes("asmrtube.library.corrupt.v1")||!app.includes('recoverFromCopy('))fail('automatic storage recovery/quarantine is missing');
+if(!app.includes("window.addEventListener('storage'")||!app.includes("storage.external-sync")||!app.includes("storage.write.conflict"))fail('multi-tab storage synchronization/conflict guard is missing');
+if(!app.includes('navigator.storage?.persist')||!app.includes('storage-write-verification-failed'))fail('storage persistence/write verification guard is missing');
+if(!app.includes("cause:'unexpected-empty-library'"))fail('unexpected whole-library wipe guard is missing');
 if(!app.includes('scheduleVolumeSave()')||!app.includes('flushVolumeSave()'))fail('volume persistence must be debounced and flushed');
 if(!app.includes('invalidateItem?.(editId)'))fail('changing a video URL must invalidate loaded player state');
 if(!app.includes("target?.closest?.('button,a,input,textarea,select"))fail('playback shortcuts must ignore focused interactive controls');
