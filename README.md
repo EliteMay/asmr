@@ -1,4 +1,4 @@
-# ASMRTube v3.0.1
+# ASMRTube v3.0.2
 
 YouTube上のASMRを自分用に整理・再生し、コメント欄にある多様なタイムスタンプを再利用するための静的Webアプリです。
 
@@ -103,6 +103,8 @@ Timestamp view: asmrtube.timestamp.view.v1
 Snapshot:       asmrtube.snapshot.v1
 Before restore: asmrtube.snapshot.beforeRestore.v1
 Diagnostics:    asmrtube.diagnostics.v1
+Recovery copy:  asmrtube.library.recovery.v1
+Corrupt copy:   asmrtube.library.corrupt.v1
 ```
 
 Schema Versionは `1` のままです。
@@ -131,6 +133,10 @@ appearance.js        Theme / display settings / media ambience
 ## データ保護
 
 - `save()` はStorage write失敗を成功扱いせず、最後に保存できた状態へ戻す
+- 保存成功時に `asmrtube.library.recovery.v1` へ復旧コピーを更新し、主保存キーの欠落・破損時は自動復旧する
+- 破損した主保存データは `asmrtube.library.corrupt.v1` へ1世代退避してから復旧する
+- 複数タブでは `storage` イベントで最新状態を反映し、古いタブからの全体上書きを防ぐ
+- 予期せずライブラリ全件が0件になる保存は、明示的な削除・Import以外ではブロックする
 - JSON Importは現在データを置換する前に型・件数・ID・YouTube動画ID・参照を検証する
 - Import JSON由来の任意HTMLや任意FieldをDOMへ引き継がない
 - Import / Delete / Restore前にローカルSnapshotを利用する
