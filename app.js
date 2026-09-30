@@ -1,4 +1,6 @@
 const STORAGE_KEY='asmrtube.library.v1';
+const RECOVERY_KEY='asmrtube.library.recovery.v1';
+const CORRUPT_KEY='asmrtube.library.corrupt.v1';
 const DEFAULT_TAGS=['耳かき','梵天','囁き','吐息','オノマトペ','タッピング','マッサージ','添い寝','ロールプレイ','睡眠'];
 const EAR_TAGS=['右耳','左耳','両耳','交互'];
 const state={library:[],playlists:[],recent:[],selectedId:null,currentView:'all',currentPlaylist:null,currentChannel:null,currentTag:null,query:'',filters:new Set(),player:null,currentId:null,duration:0,loopA:null,loopB:null,sleepTimer:null,parsedTimestamps:[]};
@@ -18,6 +20,78 @@ function applyStoredData(data){
   if(state.selectedId&&!state.library.some(item=>item.id===state.selectedId))state.selectedId=null;
   if(state.currentId&&!state.library.some(item=>item.id===state.currentId))state.currentId=null;
 }
+function parseStoredData(raw){
+  const data=JSON.parse(raw);
+  if(!data||typeof data!=='object'||Array.isArray(data))throw new Error('invalid-storage-root');
+  if(!Array.isArray(data.library)||!Array.isArray(data.playlists)||!Array.isArray(data.recent))throw new Error('invalid-storage-shape');
+  return data;
+}
+function storedItemCount(raw){try{return parseStoredData(raw).library.length}catch{return null}}
+function commitPrimaryRaw(raw){
+  localStorage.setItem(STORAGE_KEY,raw);
+  if(localStorage.getItem(STORAGE_KEY)!==raw)throw new Error('storage-write-verification-failed');
+}
+function writeRecoveryCopy(raw,reason='save'){
+  try{
+    parseStoredData(raw);
+    localStorage.setItem(RECOVERY_KEY,JSON.stringify({createdAt:Date.now(),reason,raw}));
+    return true;
+  }catch(error){
+    diag('storage.recovery.write.failure',{reason,name:error?.name||'Error',message:error?.message||'unknown'});
+    return false;
+  }
+}
+function readRecoveryCopy(){
+  try{
+    const stored=JSON.parse(localStorage.getItem(RECOVERY_KEY)||'null');
+    if(!stored||typeof stored.raw!=='string')return null;
+    return {raw:stored.raw,data:parseStoredData(stored.raw),createdAt:Number(stored.createdAt)||0,reason:String(stored.reason||'')};
+  }catch(error){
+    diag('storage.recovery.read.failure',{name:error?.name||'Error',message:error?.message||'unknown'});
+    return null;
+  }
+}
+function quarantineCorruptRaw(raw,reason='load'){
+  if(!raw)return;
+  try{
+    localStorage.setItem(CORRUPT_KEY,JSON.stringify({createdAt:Date.now(),reason,raw}));
+    diag('storage.corrupt.quarantined',{reason});
+  }catch(error){diag('storage.corrupt.quarantine.failure',{reason,name:error?.name||'Error'})}
+}
+function recoverFromCopy(recovery,cause){
+  if(!recovery)return false;
+  try{
+    commitPrimaryRaw(recovery.raw);
+    applyStoredData(recovery.data);
+    lastDurableRaw=recovery.raw;
+    diag('storage.load.recovered',{cause,items:state.library.length,recoveryReason:recovery.reason});
+    toast('保存データを自動復旧しました');
+    return true;
+  }catch(error){
+    diag('storage.load.recovery.failure',{cause,name:error?.name||'Error',message:error?.message||'unknown'});
+    return false;
+  }
+}
+function setupStorageSync(){
+  window.addEventListener('storage',event=>{
+    if(event.key!==STORAGE_KEY||event.storageArea!==localStorage)return;
+    if(!event.newValue){diag('storage.external-clear');return}
+    try{
+      const data=parseStoredData(event.newValue);
+      applyStoredData(data);
+      lastDurableRaw=event.newValue;
+      writeRecoveryCopy(event.newValue,'external-sync');
+      diag('storage.external-sync',{items:state.library.length,playlists:state.playlists.length});
+      queueMicrotask(()=>{try{renderAll()}catch{}});
+    }catch(error){diag('storage.external-sync.failure',{name:error?.name||'Error',message:error?.message||'unknown'})}
+  });
+}
+function requestPersistentStorage(){
+  try{
+    if(!navigator.storage?.persist)return;
+    navigator.storage.persist().then(granted=>diag('storage.persist',{granted:!!granted})).catch(error=>diag('storage.persist.failure',{name:error?.name||'Error'}));
+  }catch{}
+}
 function restoreDurableState(){
   if(!lastDurableRaw)return;
   try{
@@ -28,9 +102,37 @@ function restoreDurableState(){
 }
 function save({silent=false,reason='library'}={}){
   try{
+    const currentRaw=localStorage.getItem(STORAGE_KEY);
+    if(lastDurableRaw&&currentRaw&&currentRaw!==lastDurableRaw){
+      try{
+        const external=parseStoredData(currentRaw);
+        applyStoredData(external);
+        lastDurableRaw=currentRaw;
+        diag('storage.write.conflict',{reason,items:state.library.length});
+        document.dispatchEvent(new CustomEvent('asmrtube:save-conflict',{detail:{reason}}));
+        if(!silent)toast('別のタブで更新されました。最新内容を反映したので、もう一度操作してください');
+        queueMicrotask(()=>{try{renderAll()}catch{}});
+        return false;
+      }catch(error){
+        quarantineCorruptRaw(currentRaw,'save-conflict');
+        commitPrimaryRaw(lastDurableRaw);
+        diag('storage.write.conflict-recovered',{reason,name:error?.name||'Error'});
+      }
+    }
     const raw=serializeState();
-    localStorage.setItem(STORAGE_KEY,raw);
+    const previousCount=lastDurableRaw?storedItemCount(lastDurableRaw):null;
+    const destructiveReason=reason==='item-delete'||reason==='import';
+    if(previousCount>0&&state.library.length===0&&!destructiveReason){
+      diag('storage.write.blocked',{reason,cause:'unexpected-empty-library',previousCount});
+      restoreDurableState();
+      document.dispatchEvent(new CustomEvent('asmrtube:save-failed',{detail:{reason,cause:'unexpected-empty-library'}}));
+      if(!silent)toast('保存内容が空になる異常を検出したため、変更を取り消しました');
+      queueMicrotask(()=>{try{renderAll()}catch{}});
+      return false;
+    }
+    commitPrimaryRaw(raw);
     lastDurableRaw=raw;
+    writeRecoveryCopy(raw,reason);
     document.dispatchEvent(new CustomEvent('asmrtube:data-saved',{detail:{reason}}));
     return true;
   }catch(error){
@@ -43,20 +145,30 @@ function save({silent=false,reason='library'}={}){
   }
 }
 function load(){
-  try{
-    const raw=localStorage.getItem(STORAGE_KEY);
-    if(!raw){lastDurableRaw=serializeState();diag('storage.load.empty');return true}
-    const data=JSON.parse(raw);
-    applyStoredData(data);
-    lastDurableRaw=raw;
-    diag('storage.load.success',{items:state.library.length,playlists:state.playlists.length});
-    return true;
-  }catch(error){
-    lastDurableRaw=serializeState();
-    diag('storage.read.failure',{name:error?.name||'Error',message:error?.message||'unknown'});
-    toast('保存データを読み込めませんでした。データ管理からバックアップを確認してください');
-    return false;
+  const raw=localStorage.getItem(STORAGE_KEY);
+  if(raw){
+    try{
+      const data=parseStoredData(raw);
+      applyStoredData(data);
+      lastDurableRaw=raw;
+      if(!localStorage.getItem(RECOVERY_KEY))writeRecoveryCopy(raw,'bootstrap-load');
+      diag('storage.load.success',{items:state.library.length,playlists:state.playlists.length});
+      return true;
+    }catch(error){
+      quarantineCorruptRaw(raw,'load');
+      const recovery=readRecoveryCopy();
+      if(recoverFromCopy(recovery,'primary-corrupt'))return true;
+      lastDurableRaw=serializeState();
+      diag('storage.read.failure',{name:error?.name||'Error',message:error?.message||'unknown'});
+      toast('保存データを読み込めませんでした。データ管理からバックアップを確認してください');
+      return false;
+    }
   }
+  const recovery=readRecoveryCopy();
+  if(recoverFromCopy(recovery,'primary-missing'))return true;
+  lastDurableRaw=serializeState();
+  diag('storage.load.empty');
+  return true;
 }
 function uid(){return crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)}
 function ytId(url){return window.ASMRTubeCore?.youtubeVideoId(url)||null}
@@ -478,4 +590,4 @@ $('#loopBtn').setAttribute('aria-pressed','false');$('#loopBtn').onclick=()=>{if
 $('#sleepBtn').onclick=()=>$('#sleepDialog').showModal();$$('[data-sleep]').forEach(button=>button.onclick=()=>{clearTimeout(state.sleepTimer);state.sleepTimer=null;const min=Number(button.dataset.sleep);if(min){state.sleepTimer=setTimeout(()=>{state.player?.pauseVideo();$('#sleepStatus').textContent='スリープ: 完了';toast('スリープタイマーで停止しました')},min*60000);$('#sleepStatus').textContent=`スリープ: ${min}分`;$('#sleepStatus').classList.add('active');toast(`${min}分後に停止します`)}else{$('#sleepStatus').textContent='スリープ: OFF';$('#sleepStatus').classList.remove('active');toast('スリープタイマーを解除しました')}});
 document.addEventListener('asmrtube:appearance-change',event=>{if(event.detail&&Object.prototype.hasOwnProperty.call(event.detail,'showThumbs'))renderSongList()});
 
-load();state.selectedId=filtered()[0]?.id||null;renderAll();setupPlaybackShortcuts();setupDialogCloseButtons();diag('app.ready',{items:state.library.length,selected:!!state.selectedId});
+load();state.selectedId=filtered()[0]?.id||null;renderAll();setupStorageSync();requestPersistentStorage();setupPlaybackShortcuts();setupDialogCloseButtons();diag('app.ready',{items:state.library.length,selected:!!state.selectedId});

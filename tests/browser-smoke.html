@@ -5,15 +5,16 @@
 <script>
 (async()=>{
   const result=document.querySelector('#result');
-  const key='asmrtube.library.v1',settingsKey='asmrtube.settings.v1';
-  const before=localStorage.getItem(key),beforeSettings=localStorage.getItem(settingsKey);
+  const key='asmrtube.library.v1',recoveryKey='asmrtube.library.recovery.v1',corruptKey='asmrtube.library.corrupt.v1',settingsKey='asmrtube.settings.v1';
+  const before=localStorage.getItem(key),beforeRecovery=localStorage.getItem(recoveryKey),beforeCorrupt=localStorage.getItem(corruptKey),beforeSettings=localStorage.getItem(settingsKey);
   const fail=message=>{document.body.dataset.status='FAIL';result.textContent=`FAIL: ${message}`;throw new Error(message)};
   const assert=(condition,message)=>{if(!condition)fail(message)};
   try{
+    localStorage.removeItem(recoveryKey);localStorage.removeItem(corruptKey);
     localStorage.setItem(key,JSON.stringify({library:[{id:'smoke-item',url:'https://www.youtube.com/watch?v=abcdefghijk',videoId:'abcdefghijk',title:'Smoke ASMR',creator:'Tester',tags:['耳かき'],rating:2,volume:35,favorite:false,sleepFriendly:false,timestamps:[],resumeAt:120,resumeDuration:1800,resumeUpdatedAt:1700000005000,createdAt:1700000000000},{id:'other-item',url:'https://www.youtube.com/watch?v=lmnopqrstuv',videoId:'lmnopqrstuv',title:'Other ASMR',creator:'Other Channel',tags:['囁き'],rating:1,volume:30,favorite:false,sleepFriendly:true,timestamps:[],createdAt:1699999999000}],playlists:[],recent:[]}));
     localStorage.setItem(settingsKey,JSON.stringify({theme:'violet',brightness:100,compact:false,showThumbs:false,reduceMotion:true,startDashboard:false}));
-    const frame=document.createElement('iframe');frame.src='../index.html?smoke=1';frame.style.width='1200px';frame.style.height='800px';document.body.appendChild(frame);
-    await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('app load timeout')),6000);frame.onload=()=>{clearTimeout(timer);setTimeout(resolve,500)}});
+    const loadFrame=async()=>{const node=document.createElement('iframe');node.src='../index.html?smoke=1';node.style.width='1200px';node.style.height='800px';document.body.appendChild(node);await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('app load timeout')),6000);node.onload=()=>{clearTimeout(timer);setTimeout(resolve,500)}});return node};
+    const frame=await loadFrame();
     const w=frame.contentWindow,d=frame.contentDocument;
     assert(d.querySelector('.song-item'),'library item did not render');
     d.querySelector('.song-item').click();
@@ -112,9 +113,46 @@
     button.dispatchEvent(new KeyboardEvent('keydown',{key:' ',code:'Space',bubbles:true,cancelable:true}));
     assert(d.querySelector('#playBtn').textContent===beforeText,'Space on focused button was stolen by playback shortcut');
 
+    const secondFrame=await loadFrame(),d2=secondFrame.contentDocument;
+    assert(d2.querySelectorAll('.song-item').length===2,'second tab did not start from the same stored library');
+    d.querySelector('#topAddBtn').click();
+    d.querySelector('#videoUrl').value='https://www.youtube.com/watch?v=zyxwvutsrqp';
+    d.querySelector('#videoTitle').value='Persisted ASMR';
+    d.querySelector('#creator').value='Persistence Tester';
+    d.querySelector('#videoForm').requestSubmit();
+    await new Promise(r=>setTimeout(r,120));
+    let stored=JSON.parse(localStorage.getItem(key)||'null');
+    assert(stored?.library?.some(item=>item.videoId==='zyxwvutsrqp'),'new ASMR was not committed to canonical storage');
+    assert(localStorage.getItem(recoveryKey),'automatic recovery copy was not created');
+    await new Promise(r=>setTimeout(r,120));
+    assert(d2.querySelectorAll('.song-item').length===3,'second tab did not receive the external storage update');
+    d2.querySelectorAll('.song-item')[0]?.click();
+    d2.querySelector('#topFavBtn').click();
+    await new Promise(r=>setTimeout(r,120));
+    stored=JSON.parse(localStorage.getItem(key)||'null');
+    assert(stored?.library?.length===3,'stale second-tab save removed newer library items');
+    secondFrame.remove();
+
+    localStorage.removeItem(key);
+    const recoveryFrame=await loadFrame(),recoveryDoc=recoveryFrame.contentDocument;
+    stored=JSON.parse(localStorage.getItem(key)||'null');
+    assert(stored?.library?.some(item=>item.videoId==='zyxwvutsrqp'),'missing primary storage was not recovered');
+    assert([...recoveryDoc.querySelectorAll('.song-item')].some(item=>item.textContent.includes('Persisted ASMR')),'recovered library did not render');
+    recoveryFrame.remove();
+
+    localStorage.setItem(key,'{broken-json');
+    const corruptFrame=await loadFrame(),corruptDoc=corruptFrame.contentDocument;
+    stored=JSON.parse(localStorage.getItem(key)||'null');
+    assert(stored?.library?.some(item=>item.videoId==='zyxwvutsrqp'),'corrupt primary storage was not recovered');
+    assert(localStorage.getItem(corruptKey)?.includes('broken-json'),'corrupt primary storage was not quarantined');
+    assert([...corruptDoc.querySelectorAll('.song-item')].some(item=>item.textContent.includes('Persisted ASMR')),'corrupt-storage recovery did not render');
+    corruptFrame.remove();
+
     document.body.dataset.status='PASS';result.textContent='PASS';
   }finally{
     if(before==null)localStorage.removeItem(key);else localStorage.setItem(key,before);
+    if(beforeRecovery==null)localStorage.removeItem(recoveryKey);else localStorage.setItem(recoveryKey,beforeRecovery);
+    if(beforeCorrupt==null)localStorage.removeItem(corruptKey);else localStorage.setItem(corruptKey,beforeCorrupt);
     if(beforeSettings==null)localStorage.removeItem(settingsKey);else localStorage.setItem(settingsKey,beforeSettings);
   }
 })().catch(error=>{if(document.body.dataset.status!=='FAIL'){document.body.dataset.status='FAIL';document.querySelector('#result').textContent=`FAIL: ${error.message}`}});

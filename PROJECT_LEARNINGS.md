@@ -2,6 +2,31 @@
 
 この文書は、日々の変更履歴ではなく、今後のASMRTube修正で再利用価値が高い判断・失敗・成功を残す長期メモです。
 
+## L-005 localStorage全体保存では別タブの古いStateをそのままCommitしない
+
+### Context
+
+ASMRTubeは `library / playlists / recent` を1つの `asmrtube.library.v1` JSONへまとめて保存する。再生履歴・音量・続き位置のような軽い更新でもJSON全体を書き戻すため、複数タブを開いたまま片方だけ更新すると、もう片方の古いMemory Stateが後から全体を上書きし得る。
+
+### Expected / Actual
+
+- **Expected:** 別タブで追加・編集したASMRを、古いタブの履歴更新や音量保存で消さない
+- **Actual:** 旧実装は保存前のCurrent Storage比較も `storage` event同期もなく、最後に書いたタブのSnapshotが無条件で正本になった
+
+### Prevention
+
+- `storage` eventで外部タブの更新をMemoryへ反映する
+- 保存直前にCurrent StorageとLast Durable Rawを比較し、不一致なら古いStateを無条件Commitしない
+- Canonical write後に読戻し一致を確認する
+- 主保存キーとは別の復旧コピーを保持し、欠落・破損時に自動復旧する
+- 明示的な削除 / Import以外で全ライブラリが突然0件になるCommitを拒否する
+
+### Regression Guard
+
+Browser Smokeで2タブを開き、片方でASMR追加 → もう片方へ同期 → もう片方で保存しても追加ASMRが残ることを確認する。さらに主保存キー削除 / 壊れたJSONから復旧コピーで再読込できることを確認する。
+
+---
+
 ## L-004 Version別Patchの存在と正式Runtime接続を別物として扱う
 
 - **Date:** 2026-09-13
